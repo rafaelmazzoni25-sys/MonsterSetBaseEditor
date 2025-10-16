@@ -191,6 +191,9 @@ internal sealed class MyProject
   [EditorBrowsable(EditorBrowsableState.Never)]
   internal sealed class ThreadSafeObjectProvider<T> where T : new()
   {
+    [ThreadStatic]
+    private static T m_ThreadStaticValue;
+
     internal T GetInstance
     {
       [DebuggerHidden] get

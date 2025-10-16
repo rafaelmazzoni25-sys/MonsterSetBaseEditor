@@ -134,7 +134,7 @@ public class Form1 : Form
   private Label _Label16;
   private string CurrDir;
   private object LocalMousePosition;
-  private object File;
+  private object fileLoaded;
   private object mappa;
   private object Monster;
   private object NameMonster;
@@ -1490,7 +1490,7 @@ public class Form1 : Form
       return;
     }
     this.TextBox1.Text = this.OpenFileDialog1.FileName;
-    this.File = (object) 1;
+    this.fileLoaded = (object) 1;
     this.ComboBox1.Enabled = true;
     this.ComboBox2.Enabled = true;
     this.Button2.Enabled = true;
@@ -1533,7 +1533,7 @@ public class Form1 : Form
 
   private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
   {
-    if (!Operators.ConditionalCompareObjectEqual(this.File, (object) 1, false))
+    if (!Operators.ConditionalCompareObjectEqual(this.fileLoaded, (object) 1, false))
       return;
     string[] strArray = Conversions.ToString(this.ComboBox1.SelectedItem).Split(' ');
     try
@@ -1573,7 +1573,7 @@ public class Form1 : Form
     Graphics graphics = Graphics.FromImage(this.PictureBox1.Image);
     float width = 1.5f;
     object colore = this.colore;
-    Color color;
+    Color color = Color.Black;
     Pen pen = new Pen(colore != null ? (Color) colore : color, width);
     Point pt1 = new Point(Conversions.ToInteger(Operators.MultiplyObject(this.CordX_spot_old, (object) 2)), Conversions.ToInteger(Operators.MultiplyObject(this.CordY_spot_old, (object) 2)));
     Point pt2 = new Point(Conversions.ToInteger(Operators.MultiplyObject(this.CordX_spot, (object) 2)), Conversions.ToInteger(Operators.MultiplyObject(this.CordY_spot, (object) 2)));
@@ -1697,7 +1697,7 @@ public class Form1 : Form
       Graphics graphics = Graphics.FromImage(this.PictureBox1.Image);
       float num2 = 3f;
       object colore = this.colore;
-      Color color1;
+      Color color1 = Color.Black;
       Color color2 = colore != null ? (Color) colore : color1;
       Pen pen = new Pen(color2, num2);
       Brush brush = (Brush) new SolidBrush(color2);
@@ -1720,7 +1720,7 @@ public class Form1 : Form
 
   private void ComboBox2_SelectedIndexChanged(object sender, EventArgs e)
   {
-    if (!Operators.ConditionalCompareObjectEqual(this.File, (object) 1, false))
+    if (!Operators.ConditionalCompareObjectEqual(this.fileLoaded, (object) 1, false))
       return;
     if (Operators.ConditionalCompareObjectEqual(this.Inizio, (object) 1, false))
     {
