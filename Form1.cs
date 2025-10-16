@@ -149,6 +149,7 @@ public class Form1 : Form
   private object Quant;
   private object Inizio;
   private object colore;
+  private bool isAreaDragActive;
   private Point OldCoord;
   private const string SectionSeparator = "//================================================================================================================";
   private readonly Dictionary<int, string> mapNames = new Dictionary<int, string>();
@@ -1670,29 +1671,88 @@ public class Form1 : Form
 
   private void PictureBox1_MouseDown(object sender, MouseEventArgs e)
   {
-    if (!Conversions.ToBoolean(Operators.OrObject(Operators.CompareObjectEqual(this.ComboBox2.SelectedItem, (object) "1 - Spots", false), Operators.CompareObjectEqual(this.ComboBox2.SelectedItem, (object) "3 - Bone King / Golden Monsters", false))))
+    this.isAreaDragActive = false;
+    if (!this.IsAreaSpotMode())
+      return;
+    if (e.Button != MouseButtons.Left)
       return;
     this.cord_mappa();
     this.CordX_spot_old = RuntimeHelpers.GetObjectValue(this.CordX);
     this.CordY_spot_old = RuntimeHelpers.GetObjectValue(this.CordY);
+    this.isAreaDragActive = true;
   }
 
   private void PictureBox1_MouseUp(object sender, MouseEventArgs e)
   {
-    if (!Conversions.ToBoolean(Operators.OrObject(Operators.CompareObjectEqual(this.ComboBox2.SelectedItem, (object) "1 - Spots", false), Operators.CompareObjectEqual(this.ComboBox2.SelectedItem, (object) "3 - Bone King / Golden Monsters", false))))
+    if (!this.IsAreaSpotMode())
       return;
+    if (e.Button != MouseButtons.Left || !this.isAreaDragActive)
+    {
+      this.isAreaDragActive = false;
+      return;
+    }
+    this.isAreaDragActive = false;
     this.cord_mappa();
     this.CordX_spot = RuntimeHelpers.GetObjectValue(this.CordX);
     this.CordY_spot = RuntimeHelpers.GetObjectValue(this.CordY);
-    Graphics graphics = Graphics.FromImage(this.PictureBox1.Image);
-    float width = 1.5f;
-    object colore = this.colore;
-    Color color = Color.Black;
-    Pen pen = new Pen(colore != null ? (Color) colore : color, width);
-    Point pt1 = new Point(Conversions.ToInteger(Operators.MultiplyObject(this.CordX_spot_old, (object) 2)), Conversions.ToInteger(Operators.MultiplyObject(this.CordY_spot_old, (object) 2)));
-    Point pt2 = new Point(Conversions.ToInteger(Operators.MultiplyObject(this.CordX_spot, (object) 2)), Conversions.ToInteger(Operators.MultiplyObject(this.CordY_spot, (object) 2)));
-    graphics.DrawLine(pen, pt1, pt2);
-    this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX_spot_old), (object) "\t"), this.CordY_spot_old), (object) "\t"), this.CordX_spot), (object) "\t"), this.CordY_spot), (object) "\t"), (object) "-1"), (object) "\t"), this.Quant), (object) "\t"), (object) "// "), this.NameMonster));
+    int startX = Conversions.ToInteger(this.CordX_spot_old);
+    int startY = Conversions.ToInteger(this.CordY_spot_old);
+    int endX = Conversions.ToInteger(this.CordX_spot);
+    int endY = Conversions.ToInteger(this.CordY_spot);
+    int minX = Math.Min(startX, endX);
+    int minY = Math.Min(startY, endY);
+    int maxX = Math.Max(startX, endX);
+    int maxY = Math.Max(startY, endY);
+    this.CordX_spot_old = (object) minX;
+    this.CordY_spot_old = (object) minY;
+    this.CordX_spot = (object) maxX;
+    this.CordY_spot = (object) maxY;
+    Color color = this.colore != null ? (Color) this.colore : Color.Black;
+    Rectangle areaSelectionRectangle = this.CreateAreaSelectionRectangle(minX, minY, maxX, maxY);
+    try
+    {
+      using (Graphics graphics = Graphics.FromImage(this.PictureBox1.Image))
+      {
+        float width = 1.5f;
+        using (Pen pen = new Pen(color, width))
+        {
+          using (Brush brush = (Brush) new SolidBrush(Color.FromArgb(48, color)))
+            graphics.FillRectangle(brush, areaSelectionRectangle);
+          graphics.DrawRectangle(pen, areaSelectionRectangle);
+        }
+      }
+    }
+    catch (Exception ex)
+    {
+      ProjectData.SetProjectError(ex);
+      EditorLogger.LogError("Failed to draw area selection on the map image.", ex);
+      ProjectData.ClearProjectError();
+    }
+    string monster = Conversions.ToString(this.Monster);
+    string mapNumber = Conversions.ToString(this.MapNumber);
+    string quantity = Conversions.ToString(this.Quant);
+    if (string.IsNullOrEmpty(quantity))
+      quantity = "1";
+    string spawnLine = string.Format((IFormatProvider) CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t// {9}", (object) monster, (object) mapNumber, (object) "30", (object) minX, (object) minY, (object) maxX, (object) maxY, (object) "-1", (object) quantity, (object) Conversions.ToString(this.NameMonster));
+    this.ListBox1.Items.Add((object) spawnLine);
+    EditorLogger.LogInfo("Added area spawn for monster '" + monster + "' on map " + mapNumber + " from (" + Conversions.ToString((object) minX) + "," + Conversions.ToString((object) minY) + ") to (" + Conversions.ToString((object) maxX) + "," + Conversions.ToString((object) maxY) + ").");
+    this.Refresh();
+  }
+
+  private Rectangle CreateAreaSelectionRectangle(int startX, int startY, int endX, int endY)
+  {
+    int minX = Math.Min(startX, endX);
+    int minY = Math.Min(startY, endY);
+    int widthTiles = Math.Abs(endX - startX) + 1;
+    int heightTiles = Math.Abs(endY - startY) + 1;
+    int width = widthTiles * 2;
+    int height = heightTiles * 2;
+    return new Rectangle(minX * 2, minY * 2, width, height);
+  }
+
+  private bool IsAreaSpotMode()
+  {
+    return Conversions.ToBoolean(Operators.OrObject(Operators.CompareObjectEqual(this.ComboBox2.SelectedItem, (object) "1 - Spots", false), Operators.CompareObjectEqual(this.ComboBox2.SelectedItem, (object) "3 - Bone King / Golden Monsters", false)));
   }
 
   public void case_switch()
@@ -1750,7 +1810,8 @@ public class Form1 : Form
         this.Inizio = (object) 1;
       }
       this.colore = (object) Color.DarkGoldenrod;
-      this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.CordX_spot), (object) "\t"), this.CordY_spot), (object) "\t"), (object) "-1"), (object) "\t"), this.Quant), (object) "\t"), (object) "// "), this.NameMonster));
+      if (!this.IsAreaSpotMode())
+        this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.CordX_spot), (object) "\t"), this.CordY_spot), (object) "\t"), (object) "-1"), (object) "\t"), this.Quant), (object) "\t"), (object) "// "), this.NameMonster));
     }
     else
     {
@@ -1805,6 +1866,8 @@ public class Form1 : Form
       if (Conversions.ToBoolean(Operators.OrObject(Operators.CompareObjectEqual(this.Quant, (object) "", false), Operators.CompareObjectEqual(this.Quant, (object) "0", false))))
         this.Quant = (object) 1;
       this.case_switch();
+      if (this.IsAreaSpotMode())
+        return;
       if (e.Button != MouseButtons.Left)
         return;
       this.OldCoord = new Point((Size) e.Location);
