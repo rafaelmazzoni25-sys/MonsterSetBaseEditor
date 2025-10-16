@@ -11,8 +11,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-#nullable disable
-namespace MonasterSetBase.My;
+namespace MonasterSetBase.My
+{
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 [GeneratedCode("MyTemplate", "8.0.0.0")]
@@ -45,4 +45,6 @@ internal class MyApplication : WindowsFormsApplicationBase
 
   [DebuggerStepThrough]
   protected override void OnCreateMainForm() => this.MainForm = (Form) MyProject.Forms.Form1;
+}
+
 }

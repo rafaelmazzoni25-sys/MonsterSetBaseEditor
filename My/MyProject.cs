@@ -18,8 +18,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-#nullable disable
-namespace MonasterSetBase.My;
+namespace MonasterSetBase.My
+{
 
 [GeneratedCode("MyTemplate", "8.0.0.0")]
 [StandardModule]
@@ -109,20 +109,15 @@ internal sealed class MyProject
       {
         return new T();
       }
-      catch (TargetInvocationException ex) when (
+      catch (TargetInvocationException ex)
       {
-        // ISSUE: unable to correctly present filter
-        ProjectData.SetProjectError((Exception) ex);
         if (ex.InnerException != null)
         {
-          SuccessfulFiltering;
+          string resourceString = Utils.GetResourceString("WinForms_SeeInnerException", ex.InnerException.Message);
+          throw new InvalidOperationException(resourceString, ex.InnerException);
         }
-        else
-          throw;
-      }
-      )
-      {
-        throw new InvalidOperationException(Utils.GetResourceString("WinForms_SeeInnerException", ex.InnerException.Message), ex.InnerException);
+
+        throw;
       }
       finally
       {
@@ -212,4 +207,6 @@ internal sealed class MyProject
     {
     }
   }
+}
+
 }
