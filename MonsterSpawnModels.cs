@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Xml;
 using System.Xml.Serialization;
 
 namespace MonasterSetBase
@@ -21,6 +23,7 @@ namespace MonasterSetBase
         {
             this.Name = string.Empty;
             this.Spots = new List<MonsterSpot>();
+            this.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         [XmlAttribute("Number")]
@@ -31,6 +34,43 @@ namespace MonasterSetBase
 
         [XmlElement("Spot")]
         public List<MonsterSpot> Spots { get; set; }
+
+        [XmlIgnore]
+        public Dictionary<string, string> ExtraAttributes { get; set; }
+
+        [XmlAnyAttribute]
+        public XmlAttribute[] ExtraSerializedAttributes
+        {
+            get
+            {
+                if (this.ExtraAttributes == null || this.ExtraAttributes.Count == 0)
+                    return (XmlAttribute[]) null;
+                XmlDocument xmlDocument = new XmlDocument();
+                List<XmlAttribute> xmlAttributeList = new List<XmlAttribute>();
+                foreach (KeyValuePair<string, string> extraAttribute in this.ExtraAttributes)
+                {
+                    XmlAttribute attribute = xmlDocument.CreateAttribute(extraAttribute.Key);
+                    attribute.Value = extraAttribute.Value;
+                    xmlAttributeList.Add(attribute);
+                }
+                return xmlAttributeList.ToArray();
+            }
+            set
+            {
+                if (value == null || value.Length == 0)
+                {
+                    this.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    return;
+                }
+                Dictionary<string, string> dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (XmlAttribute xmlAttribute in value)
+                {
+                    if (xmlAttribute != null && !string.IsNullOrEmpty(xmlAttribute.Name) && !dictionary.ContainsKey(xmlAttribute.Name))
+                        dictionary.Add(xmlAttribute.Name, xmlAttribute.Value);
+                }
+                this.ExtraAttributes = dictionary;
+            }
+        }
     }
 
     public class MonsterSpot
@@ -39,6 +79,7 @@ namespace MonasterSetBase
         {
             this.Description = string.Empty;
             this.Spawns = new List<MonsterSpawnEntry>();
+            this.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
         [XmlAttribute("Type")]
@@ -49,10 +90,52 @@ namespace MonasterSetBase
 
         [XmlElement("Spawn")]
         public List<MonsterSpawnEntry> Spawns { get; set; }
+
+        [XmlIgnore]
+        public Dictionary<string, string> ExtraAttributes { get; set; }
+
+        [XmlAnyAttribute]
+        public XmlAttribute[] ExtraSerializedAttributes
+        {
+            get
+            {
+                if (this.ExtraAttributes == null || this.ExtraAttributes.Count == 0)
+                    return (XmlAttribute[]) null;
+                XmlDocument xmlDocument = new XmlDocument();
+                List<XmlAttribute> xmlAttributeList = new List<XmlAttribute>();
+                foreach (KeyValuePair<string, string> extraAttribute in this.ExtraAttributes)
+                {
+                    XmlAttribute attribute = xmlDocument.CreateAttribute(extraAttribute.Key);
+                    attribute.Value = extraAttribute.Value;
+                    xmlAttributeList.Add(attribute);
+                }
+                return xmlAttributeList.ToArray();
+            }
+            set
+            {
+                if (value == null || value.Length == 0)
+                {
+                    this.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    return;
+                }
+                Dictionary<string, string> dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (XmlAttribute xmlAttribute in value)
+                {
+                    if (xmlAttribute != null && !string.IsNullOrEmpty(xmlAttribute.Name) && !dictionary.ContainsKey(xmlAttribute.Name))
+                        dictionary.Add(xmlAttribute.Name, xmlAttribute.Value);
+                }
+                this.ExtraAttributes = dictionary;
+            }
+        }
     }
 
     public class MonsterSpawnEntry
     {
+        public MonsterSpawnEntry()
+        {
+            this.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        }
+
         [XmlAttribute("Index")]
         public int Index { get; set; }
 
@@ -79,6 +162,43 @@ namespace MonasterSetBase
 
         [XmlAttribute("Element")]
         public int? Element { get; set; }
+
+        [XmlIgnore]
+        public Dictionary<string, string> ExtraAttributes { get; set; }
+
+        [XmlAnyAttribute]
+        public XmlAttribute[] ExtraSerializedAttributes
+        {
+            get
+            {
+                if (this.ExtraAttributes == null || this.ExtraAttributes.Count == 0)
+                    return (XmlAttribute[]) null;
+                XmlDocument xmlDocument = new XmlDocument();
+                List<XmlAttribute> xmlAttributeList = new List<XmlAttribute>();
+                foreach (KeyValuePair<string, string> extraAttribute in this.ExtraAttributes)
+                {
+                    XmlAttribute attribute = xmlDocument.CreateAttribute(extraAttribute.Key);
+                    attribute.Value = extraAttribute.Value;
+                    xmlAttributeList.Add(attribute);
+                }
+                return xmlAttributeList.ToArray();
+            }
+            set
+            {
+                if (value == null || value.Length == 0)
+                {
+                    this.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    return;
+                }
+                Dictionary<string, string> dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (XmlAttribute xmlAttribute in value)
+                {
+                    if (xmlAttribute != null && !string.IsNullOrEmpty(xmlAttribute.Name) && !dictionary.ContainsKey(xmlAttribute.Name))
+                        dictionary.Add(xmlAttribute.Name, xmlAttribute.Value);
+                }
+                this.ExtraAttributes = dictionary;
+            }
+        }
     }
 
     [XmlRoot("MonsterList")]

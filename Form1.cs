@@ -155,6 +155,20 @@ public class Form1 : Form
   private readonly Dictionary<int, string> monsterNames = new Dictionary<int, string>();
   private readonly Dictionary<string, string> spotDescriptions = new Dictionary<string, string>();
   private readonly Dictionary<int, string> spawnMapNames = new Dictionary<int, string>();
+  private static readonly string[] KnownMapAttributes = new string[2]{ "Number", "Name" };
+  private static readonly string[] KnownSpotAttributes = new string[2]{ "Type", "Description" };
+  private static readonly string[] KnownSpawnAttributes = new string[9]
+  {
+    "Index",
+    "Distance",
+    "StartX",
+    "StartY",
+    "Dir",
+    "EndX",
+    "EndY",
+    "Count",
+    "Element"
+  };
 
   public Form1()
   {
@@ -1832,10 +1846,10 @@ public class Form1 : Form
     this.spotDescriptions.Clear();
     this.spawnMapNames.Clear();
     EditorLogger.LogInfo("Loading spawn XML file '" + filePath + "'.");
-    MonsterSpawnDocument monsterSpawnDocument;
-    XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
-    using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-      monsterSpawnDocument = (MonsterSpawnDocument) xmlSerializer.Deserialize((Stream) fileStream);
+    int skippedMaps;
+    int skippedSpots;
+    int skippedSpawns;
+    MonsterSpawnDocument monsterSpawnDocument = this.ParseSpawnXmlDocument(filePath, out skippedMaps, out skippedSpots, out skippedSpawns);
     if (monsterSpawnDocument == null || monsterSpawnDocument.Maps == null)
     {
       EditorLogger.LogWarning("Spawn XML file '" + filePath + "' contains no maps.");
@@ -1851,7 +1865,10 @@ public class Form1 : Form
       checked { ++mapCount; }
       string mapName = this.ResolveMapDisplayName(map.Number, map.Name);
       if (!string.IsNullOrEmpty(mapName))
-        this.spawnMapNames[map.Number] = mapName;
+      {
+        string originalMapName = !string.IsNullOrEmpty(map.Name) ? map.Name : mapName;
+        this.spawnMapNames[map.Number] = originalMapName;
+      }
       foreach (MonsterSpot spot in map.Spots)
       {
         checked { ++spotCount; }
@@ -1874,6 +1891,197 @@ public class Form1 : Form
     }
     this.Inizio = (object) 0;
     EditorLogger.LogInfo("Loaded spawn XML file '" + filePath + "' with " + Conversions.ToString(mapCount) + " map(s), " + Conversions.ToString(spotCount) + " spot(s) and " + Conversions.ToString(spawnCount) + " spawn row(s).");
+    if (skippedMaps > 0 || skippedSpots > 0 || skippedSpawns > 0)
+      EditorLogger.LogWarning("While loading '" + filePath + "' skipped " + Conversions.ToString(skippedMaps) + " map(s), " + Conversions.ToString(skippedSpots) + " spot(s) and " + Conversions.ToString(skippedSpawns) + " spawn row(s) due to invalid or incomplete data.");
+  }
+
+  private MonsterSpawnDocument ParseSpawnXmlDocument(string filePath, out int skippedMaps, out int skippedSpots, out int skippedSpawns)
+  {
+    skippedMaps = 0;
+    skippedSpots = 0;
+    skippedSpawns = 0;
+    XmlDocument xmlDocument = new XmlDocument();
+    XmlReaderSettings settings = new XmlReaderSettings();
+    settings.IgnoreComments = true;
+    settings.IgnoreWhitespace = true;
+    using (FileStream input = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+    {
+      using (XmlReader reader = XmlReader.Create((Stream) input, settings))
+        xmlDocument.Load(reader);
+    }
+    XmlElement documentElement = xmlDocument.DocumentElement;
+    if (documentElement == null || !string.Equals(documentElement.Name, "MonsterSpawn", StringComparison.Ordinal))
+    {
+      EditorLogger.LogError("Spawn XML file '" + filePath + "' has unexpected root node '" + (documentElement != null ? documentElement.Name : (string) null) + "'.", (Exception) null);
+      throw new InvalidOperationException("Invalid MonsterSpawn XML root element.");
+    }
+    MonsterSpawnDocument monsterSpawnDocument = new MonsterSpawnDocument();
+    foreach (XmlNode childNode in documentElement.ChildNodes)
+    {
+      XmlElement mapElement = childNode as XmlElement;
+      if (mapElement == null || !string.Equals(mapElement.Name, "Map", StringComparison.Ordinal))
+        continue;
+      int mapNumber;
+      if (!TryParseIntAttribute(mapElement, "Number", out mapNumber))
+      {
+        EditorLogger.LogWarning("Skipping map entry with invalid or missing Number attribute ('" + mapElement.GetAttribute("Number") + "') in '" + filePath + "'.");
+        checked { ++skippedMaps; }
+        continue;
+      }
+      MonsterMap monsterMap = new MonsterMap();
+      monsterMap.Number = mapNumber;
+      monsterMap.Name = GetAttributeValue(mapElement, "Name");
+      if (monsterMap.ExtraAttributes == null)
+        monsterMap.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+      CaptureExtraAttributes(mapElement, monsterMap.ExtraAttributes, KnownMapAttributes);
+      foreach (XmlNode childNode2 in mapElement.ChildNodes)
+      {
+        XmlElement spotElement = childNode2 as XmlElement;
+        if (spotElement == null || !string.Equals(spotElement.Name, "Spot", StringComparison.Ordinal))
+          continue;
+        int type;
+        if (!TryParseIntAttribute(spotElement, "Type", out type))
+        {
+          EditorLogger.LogWarning("Skipping spot entry on map " + Conversions.ToString(mapNumber) + " because Type attribute is missing or invalid ('" + spotElement.GetAttribute("Type") + "').");
+          checked { ++skippedSpots; }
+          continue;
+        }
+        MonsterSpot monsterSpot = new MonsterSpot();
+        monsterSpot.Type = type;
+        monsterSpot.Description = GetAttributeValue(spotElement, "Description");
+        if (monsterSpot.ExtraAttributes == null)
+          monsterSpot.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        CaptureExtraAttributes(spotElement, monsterSpot.ExtraAttributes, KnownSpotAttributes);
+        foreach (XmlNode childNode3 in spotElement.ChildNodes)
+        {
+          XmlElement spawnElement = childNode3 as XmlElement;
+          if (spawnElement == null || !string.Equals(spawnElement.Name, "Spawn", StringComparison.Ordinal))
+            continue;
+          MonsterSpawnEntry monsterSpawnEntry = this.ParseSpawnEntry(spawnElement, mapNumber, type);
+          if (monsterSpawnEntry != null)
+            monsterSpot.Spawns.Add(monsterSpawnEntry);
+          else
+            checked { ++skippedSpawns; }
+        }
+        monsterMap.Spots.Add(monsterSpot);
+      }
+      monsterSpawnDocument.Maps.Add(monsterMap);
+    }
+    return monsterSpawnDocument;
+  }
+
+  private static string GetAttributeValue(XmlElement element, string attributeName)
+  {
+    if (element == null || attributeName == null)
+      return string.Empty;
+    string attribute = element.GetAttribute(attributeName);
+    if (attribute == null)
+      return string.Empty;
+    return attribute;
+  }
+
+  private MonsterSpawnEntry ParseSpawnEntry(XmlElement spawnElement, int mapNumber, int spotType)
+  {
+    if (spawnElement == null)
+      return (MonsterSpawnEntry) null;
+    int index;
+    if (!this.TryParseRequiredIntAttribute(spawnElement, "Index", mapNumber, spotType, out index))
+      return (MonsterSpawnEntry) null;
+    int distance;
+    if (!this.TryParseRequiredIntAttribute(spawnElement, "Distance", mapNumber, spotType, out distance))
+      return (MonsterSpawnEntry) null;
+    int startX;
+    if (!this.TryParseRequiredIntAttribute(spawnElement, "StartX", mapNumber, spotType, out startX))
+      return (MonsterSpawnEntry) null;
+    int startY;
+    if (!this.TryParseRequiredIntAttribute(spawnElement, "StartY", mapNumber, spotType, out startY))
+      return (MonsterSpawnEntry) null;
+    int direction;
+    if (!this.TryParseRequiredIntAttribute(spawnElement, "Dir", mapNumber, spotType, out direction))
+      return (MonsterSpawnEntry) null;
+    MonsterSpawnEntry monsterSpawnEntry = new MonsterSpawnEntry();
+    monsterSpawnEntry.Index = index;
+    monsterSpawnEntry.Distance = distance;
+    monsterSpawnEntry.StartX = startX;
+    monsterSpawnEntry.StartY = startY;
+    monsterSpawnEntry.Direction = direction;
+    monsterSpawnEntry.EndX = this.TryParseOptionalIntAttribute(spawnElement, "EndX", mapNumber, spotType);
+    monsterSpawnEntry.EndY = this.TryParseOptionalIntAttribute(spawnElement, "EndY", mapNumber, spotType);
+    monsterSpawnEntry.Count = this.TryParseOptionalIntAttribute(spawnElement, "Count", mapNumber, spotType);
+    monsterSpawnEntry.Element = this.TryParseOptionalIntAttribute(spawnElement, "Element", mapNumber, spotType);
+    if (monsterSpawnEntry.ExtraAttributes == null)
+      monsterSpawnEntry.ExtraAttributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    CaptureExtraAttributes(spawnElement, monsterSpawnEntry.ExtraAttributes, KnownSpawnAttributes);
+    return monsterSpawnEntry;
+  }
+
+  private static void CaptureExtraAttributes(XmlElement element, Dictionary<string, string> target, string[] knownAttributes)
+  {
+    if (element == null || target == null)
+      return;
+    foreach (XmlAttribute xmlAttribute in element.Attributes)
+    {
+      if (xmlAttribute != null && !string.IsNullOrEmpty(xmlAttribute.Name) && !IsKnownAttribute(xmlAttribute.Name, knownAttributes))
+        target[xmlAttribute.Name] = xmlAttribute.Value;
+    }
+  }
+
+  private static bool IsKnownAttribute(string attributeName, string[] knownAttributes)
+  {
+    if (string.IsNullOrEmpty(attributeName) || knownAttributes == null)
+      return false;
+    foreach (string str in knownAttributes)
+    {
+      if (string.Equals(attributeName, str, StringComparison.OrdinalIgnoreCase))
+        return true;
+    }
+    return false;
+  }
+
+  private static bool TryParseIntAttribute(XmlElement element, string attributeName, out int value)
+  {
+    value = 0;
+    if (element == null || attributeName == null)
+      return false;
+    string attribute = element.GetAttribute(attributeName);
+    if (string.IsNullOrEmpty(attribute))
+      return false;
+    return int.TryParse(attribute, NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture, out value);
+  }
+
+  private bool TryParseRequiredIntAttribute(XmlElement element, string attributeName, int mapNumber, int spotType, out int value)
+  {
+    value = 0;
+    if (element == null)
+      return false;
+    string attribute = element.GetAttribute(attributeName);
+    if (string.IsNullOrEmpty(attribute))
+    {
+      EditorLogger.LogWarning("Spawn entry missing attribute '" + attributeName + "' on map " + Conversions.ToString(mapNumber) + " spot type " + Conversions.ToString(spotType) + ".");
+      return false;
+    }
+    if (!int.TryParse(attribute, NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture, out value))
+    {
+      EditorLogger.LogWarning("Spawn entry has invalid integer value '" + attribute + "' for attribute '" + attributeName + "' on map " + Conversions.ToString(mapNumber) + " spot type " + Conversions.ToString(spotType) + ".");
+      return false;
+    }
+    return true;
+  }
+
+  private int? TryParseOptionalIntAttribute(XmlElement element, string attributeName, int mapNumber, int spotType)
+  {
+    if (element == null)
+      return new int?();
+    if (!element.HasAttribute(attributeName))
+      return new int?();
+    string attribute = element.GetAttribute(attributeName);
+    if (string.IsNullOrEmpty(attribute))
+      return new int?();
+    int result;
+    if (int.TryParse(attribute, NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture, out result))
+      return new int?(result);
+    EditorLogger.LogWarning("Spawn entry has invalid integer value '" + attribute + "' for optional attribute '" + attributeName + "' on map " + Conversions.ToString(mapNumber) + " spot type " + Conversions.ToString(spotType) + ".");
+    return new int?();
   }
 
   private void SaveSpawnXmlFile(string filePath)
