@@ -34,10 +34,13 @@
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
+    <Reference Include="System.Xml" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EditorLogger.cs" />
+    <Compile Include="MonsterSpawnModels.cs" />
     <Compile Include="Form1.cs" />
     <Compile Include="My\MyApplication.cs" />
     <Compile Include="My\MyComputer.cs" />
