@@ -10,7 +10,6 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-#nullable disable
 namespace MonasterSetBase.My;
 
 [DebuggerNonUserCode]

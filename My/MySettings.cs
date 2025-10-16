@@ -14,7 +14,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-#nullable disable
 namespace MonasterSetBase.My;
 
 [EditorBrowsable(EditorBrowsableState.Advanced)]
