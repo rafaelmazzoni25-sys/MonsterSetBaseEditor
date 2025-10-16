@@ -1473,17 +1473,21 @@ public class Form1 : Form
     if (this.OpenFileDialog1.ShowDialog() != DialogResult.OK)
       return;
     this.ListBox1.Items.Clear();
+    string fileName = this.OpenFileDialog1.FileName;
+    EditorLogger.LogInfo("Opening spawn file '" + fileName + "'.");
     try
     {
-      string extension = Path.GetExtension(this.OpenFileDialog1.FileName);
+      string extension = Path.GetExtension(fileName);
       if (string.Equals(extension, ".xml", StringComparison.OrdinalIgnoreCase))
-        this.LoadSpawnXmlFile(this.OpenFileDialog1.FileName);
+        this.LoadSpawnXmlFile(fileName);
       else
-        this.LoadSpawnTextFile(this.OpenFileDialog1.FileName);
+        this.LoadSpawnTextFile(fileName);
+      EditorLogger.LogInfo("Spawn file '" + fileName + "' loaded successfully.");
     }
     catch (Exception ex)
     {
       ProjectData.SetProjectError(ex);
+      EditorLogger.LogError("Failed to load spawn file '" + fileName + "'.", ex);
       int num = (int) Interaction.MsgBox((object) "Failed to load monster spawn file", MsgBoxStyle.Critical);
       ProjectData.ClearProjectError();
       this.ListBox1.Items.Clear();
@@ -1505,30 +1509,43 @@ public class Form1 : Form
     this.SaveFileDialog1.Filter = "Monster files (*.txt;*.xml)|*.txt;*.xml|Text files (*.txt)|*.txt|XML files (*.xml)|*.xml";
     if (this.SaveFileDialog1.ShowDialog() != DialogResult.OK)
       return;
-    if (Operators.ConditionalCompareObjectEqual(this.Inizio, (object) 1, false))
+    string fileName = this.SaveFileDialog1.FileName;
+    EditorLogger.LogInfo("Saving spawn file '" + fileName + "'.");
+    try
     {
-      this.ListBox1.Items.Add((object) "end");
-      this.Inizio = (object) 0;
-    }
-    string extension = Path.GetExtension(this.SaveFileDialog1.FileName);
-    if (string.Equals(extension, ".xml", StringComparison.OrdinalIgnoreCase))
-    {
-      this.SaveSpawnXmlFile(this.SaveFileDialog1.FileName);
-    }
-    else
-    {
-      using (StreamWriter streamWriter = new StreamWriter(this.SaveFileDialog1.FileName))
+      if (Operators.ConditionalCompareObjectEqual(this.Inizio, (object) 1, false))
       {
-        int num1 = checked (this.ListBox1.Items.Count - 1);
-        int index = 0;
-        while (index <= num1)
+        this.ListBox1.Items.Add((object) "end");
+        this.Inizio = (object) 0;
+      }
+      string extension = Path.GetExtension(fileName);
+      if (string.Equals(extension, ".xml", StringComparison.OrdinalIgnoreCase))
+      {
+        this.SaveSpawnXmlFile(fileName);
+      }
+      else
+      {
+        using (StreamWriter streamWriter = new StreamWriter(fileName))
         {
-          streamWriter.WriteLine(this.ListBox1.Items[index].ToString());
-          checked { ++index; }
+          int num1 = checked (this.ListBox1.Items.Count - 1);
+          int index = 0;
+          while (index <= num1)
+          {
+            streamWriter.WriteLine(this.ListBox1.Items[index].ToString());
+            checked { ++index; }
+          }
         }
       }
+      EditorLogger.LogInfo("Spawn file '" + fileName + "' saved successfully.");
+      int num2 = (int) Interaction.MsgBox((object) "File saved with success", MsgBoxStyle.Information);
     }
-    int num2 = (int) Interaction.MsgBox((object) "File saved with success", MsgBoxStyle.Information);
+    catch (Exception ex)
+    {
+      ProjectData.SetProjectError(ex);
+      EditorLogger.LogError("Failed to save spawn file '" + fileName + "'.", ex);
+      int num3 = (int) Interaction.MsgBox((object) "Failed to save monster spawn file", MsgBoxStyle.Critical);
+      ProjectData.ClearProjectError();
+    }
   }
 
   private void ComboBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -1744,6 +1761,7 @@ public class Form1 : Form
     catch (Exception ex)
     {
       ProjectData.SetProjectError(ex);
+      EditorLogger.LogError("Failed to remove spawn entry at index " + Conversions.ToString(this.ListBox1.SelectedIndex) + ".", ex);
       ProjectData.ClearProjectError();
     }
   }
@@ -1772,6 +1790,7 @@ public class Form1 : Form
     catch (Exception ex)
     {
       ProjectData.SetProjectError(ex);
+      EditorLogger.LogError("Failed while loading map list entries.", ex);
       int num = (int) Interaction.MsgBox((object) "\\Maps.txt Missing", MsgBoxStyle.Critical);
       ProjectData.EndApp();
       ProjectData.ClearProjectError();
@@ -1784,6 +1803,7 @@ public class Form1 : Form
     catch (Exception ex)
     {
       ProjectData.SetProjectError(ex);
+      EditorLogger.LogError("Failed to load monster definitions from XML or text files.", ex);
       int num = (int) Interaction.MsgBox((object) "Monster list missing (Monster.txt or IGC_MonsterList.xml)", MsgBoxStyle.Critical);
       ProjectData.EndApp();
       ProjectData.ClearProjectError();
@@ -1794,33 +1814,47 @@ public class Form1 : Form
   {
     this.spotDescriptions.Clear();
     this.spawnMapNames.Clear();
+    int num = 0;
     using (StreamReader streamReader = new StreamReader(filePath))
     {
       while (!streamReader.EndOfStream)
+      {
         this.ListBox1.Items.Add((object) streamReader.ReadLine());
+        checked { ++num; }
+      }
     }
     this.Inizio = (object) 0;
+    EditorLogger.LogInfo("Loaded spawn TXT file '" + filePath + "' with " + Conversions.ToString(num) + " line(s).");
   }
 
   private void LoadSpawnXmlFile(string filePath)
   {
     this.spotDescriptions.Clear();
     this.spawnMapNames.Clear();
+    EditorLogger.LogInfo("Loading spawn XML file '" + filePath + "'.");
     MonsterSpawnDocument monsterSpawnDocument;
     XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
     using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
       monsterSpawnDocument = (MonsterSpawnDocument) xmlSerializer.Deserialize((Stream) fileStream);
     if (monsterSpawnDocument == null || monsterSpawnDocument.Maps == null)
+    {
+      EditorLogger.LogWarning("Spawn XML file '" + filePath + "' contains no maps.");
       return;
+    }
+    int mapCount = 0;
+    int spotCount = 0;
+    int spawnCount = 0;
     foreach (MonsterMap map in monsterSpawnDocument.Maps)
     {
       if (map.Spots == null)
         continue;
+      checked { ++mapCount; }
       string mapName = this.ResolveMapDisplayName(map.Number, map.Name);
       if (!string.IsNullOrEmpty(mapName))
         this.spawnMapNames[map.Number] = mapName;
       foreach (MonsterSpot spot in map.Spots)
       {
+        checked { ++spotCount; }
         string key = this.BuildSpotDescriptionKey(map.Number, spot.Type);
         if (!string.IsNullOrEmpty(spot.Description))
           this.spotDescriptions[key] = spot.Description;
@@ -1830,12 +1864,16 @@ public class Form1 : Form
         if (spot.Spawns != null)
         {
           foreach (MonsterSpawnEntry spawn in spot.Spawns)
+          {
             this.ListBox1.Items.Add((object) this.FormatSpawnListEntry(map, spot, spawn));
+            checked { ++spawnCount; }
+          }
         }
         this.ListBox1.Items.Add((object) "end");
       }
     }
     this.Inizio = (object) 0;
+    EditorLogger.LogInfo("Loaded spawn XML file '" + filePath + "' with " + Conversions.ToString(mapCount) + " map(s), " + Conversions.ToString(spotCount) + " spot(s) and " + Conversions.ToString(spawnCount) + " spawn row(s).");
   }
 
   private void SaveSpawnXmlFile(string filePath)
@@ -1847,10 +1885,18 @@ public class Form1 : Form
     settings.IndentChars = "  ";
     settings.NewLineHandling = NewLineHandling.Replace;
     settings.NewLineChars = Environment.NewLine;
-    using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+    try
     {
-      using (XmlWriter xmlWriter = XmlWriter.Create((Stream) fileStream, settings))
-        xmlSerializer.Serialize(xmlWriter, (object) monsterSpawnDocument);
+      using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
+      {
+        using (XmlWriter xmlWriter = XmlWriter.Create((Stream) fileStream, settings))
+          xmlSerializer.Serialize(xmlWriter, (object) monsterSpawnDocument);
+      }
+    }
+    catch (Exception ex)
+    {
+      EditorLogger.LogError("Failed to save XML spawn file '" + filePath + "'.", ex);
+      throw;
     }
   }
 
@@ -1859,9 +1905,11 @@ public class Form1 : Form
     Dictionary<int, MonsterMap> dictionary = new Dictionary<int, MonsterMap>();
     int num = -1;
     string currentSpotDescription = (string) null;
+    int lineNumber = 0;
     foreach (object obj in this.ListBox1.Items)
     {
       string str = Conversions.ToString(obj);
+      checked { ++lineNumber; }
       if (!string.IsNullOrEmpty(str))
       {
         string trimmed = str.Trim();
@@ -1887,22 +1935,34 @@ public class Form1 : Form
             continue;
           }
           if (num == -1)
+          {
+            EditorLogger.LogWarning("Skipping line " + Conversions.ToString(lineNumber) + " because no spot header was detected: " + trimmed);
             continue;
+          }
           string[] strArray = str.Split('\t');
           if (num == 1 || num == 3)
           {
             if (strArray.Length < 9)
+            {
+              EditorLogger.LogWarning("Skipping multi-spawn entry at line " + Conversions.ToString(lineNumber) + " due to insufficient columns (" + Conversions.ToString(strArray.Length) + ").");
               continue;
+            }
           }
           else if (strArray.Length < 6)
+          {
+            EditorLogger.LogWarning("Skipping spawn entry at line " + Conversions.ToString(lineNumber) + " due to insufficient columns (" + Conversions.ToString(strArray.Length) + ").");
             continue;
+          }
           int? nullable1 = this.ParseNullableInt32(strArray[0]);
           int? nullable2 = this.ParseNullableInt32(strArray[1]);
           int? nullable3 = this.ParseNullableInt32(strArray[2]);
           int? nullable4 = this.ParseNullableInt32(strArray[3]);
           int? nullable5 = this.ParseNullableInt32(strArray[4]);
           if (!nullable1.HasValue || !nullable2.HasValue || (!nullable3.HasValue || !nullable4.HasValue) || !nullable5.HasValue)
+          {
+            EditorLogger.LogWarning("Skipping spawn entry at line " + Conversions.ToString(lineNumber) + " due to invalid numeric values.");
             continue;
+          }
           string spotKey = this.BuildSpotDescriptionKey(nullable2.Value, num);
           if (!string.IsNullOrEmpty(currentSpotDescription))
           {
@@ -1945,6 +2005,14 @@ public class Form1 : Form
     monsterSpawnDocument.Maps = dictionary.Values.OrderBy<MonsterMap, int>((Func<MonsterMap, int>) (m => m.Number)).ToList<MonsterMap>();
     foreach (MonsterMap map in monsterSpawnDocument.Maps)
       map.Spots = map.Spots.OrderBy<MonsterSpot, int>((Func<MonsterSpot, int>) (s => s.Type)).ToList<MonsterSpot>();
+    int totalSpots = monsterSpawnDocument.Maps.Sum<MonsterMap>((Func<MonsterMap, int>) (m => m.Spots != null ? m.Spots.Count : 0));
+    int totalSpawns = monsterSpawnDocument.Maps.Sum<MonsterMap>((Func<MonsterMap, int>) (m =>
+    {
+      if (m.Spots == null)
+        return 0;
+      return m.Spots.Sum<MonsterSpot>((Func<MonsterSpot, int>) (s => s.Spawns != null ? s.Spawns.Count : 0));
+    }));
+    EditorLogger.LogInfo("Built spawn document with " + Conversions.ToString(monsterSpawnDocument.Maps.Count) + " map(s), " + Conversions.ToString(totalSpots) + " spot(s) and " + Conversions.ToString(totalSpawns) + " spawn row(s).");
     return monsterSpawnDocument;
   }
 
@@ -2115,20 +2183,36 @@ public class Form1 : Form
     this.ComboBox1.Items.Clear();
     this.mapNames.Clear();
     string path = Path.Combine(this.CurrDir, "Maps.txt");
-    using (StreamReader streamReader = new StreamReader(path))
+    if (!File.Exists(path))
     {
-      while (!streamReader.EndOfStream)
+      EditorLogger.LogError("Maps.txt not found at '" + path + "'.", (Exception) null);
+      throw new FileNotFoundException("Maps.txt file not found.", path);
+    }
+    int count = 0;
+    try
+    {
+      using (StreamReader streamReader = new StreamReader(path))
       {
-        string str = streamReader.ReadLine();
-        if (!string.IsNullOrEmpty(str))
+        while (!streamReader.EndOfStream)
         {
-          this.ComboBox1.Items.Add((object) str);
-          string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-          int result;
-          if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
-            this.mapNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
+          string str = streamReader.ReadLine();
+          if (!string.IsNullOrEmpty(str))
+          {
+            this.ComboBox1.Items.Add((object) str);
+            string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            int result;
+            if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+              this.mapNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
+            checked { ++count; }
+          }
         }
       }
+      EditorLogger.LogInfo("Loaded map list with " + Conversions.ToString(count) + " entry(ies) from '" + path + "'.");
+    }
+    catch (Exception ex)
+    {
+      EditorLogger.LogError("Failed to read Maps.txt from '" + path + "'.", ex);
+      throw;
     }
   }
 
@@ -2150,11 +2234,17 @@ public class Form1 : Form
           {
             MonsterDefinitionList definitionList = (MonsterDefinitionList) xmlSerializer.Deserialize((Stream) fileStream);
             this.ApplyMonsterDefinitionsToList(definitionList);
+            EditorLogger.LogInfo("Loaded monster definitions from XML '" + path + "'.");
             return true;
           }
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException ex)
         {
+          EditorLogger.LogError("Failed to parse monster definitions from XML '" + path + "'.", ex);
+        }
+        catch (Exception ex)
+        {
+          EditorLogger.LogError("Unexpected error reading monster definitions from XML '" + path + "'.", ex);
         }
       }
     }
@@ -2166,20 +2256,36 @@ public class Form1 : Form
     string path = Path.Combine(this.CurrDir, "Monster.txt");
     this.ListBox2.Items.Clear();
     this.monsterNames.Clear();
-    using (StreamReader streamReader = new StreamReader(path))
+    if (!File.Exists(path))
     {
-      while (!streamReader.EndOfStream)
+      EditorLogger.LogError("Monster.txt not found at '" + path + "'.", (Exception) null);
+      throw new FileNotFoundException("Monster.txt file not found.", path);
+    }
+    int count = 0;
+    try
+    {
+      using (StreamReader streamReader = new StreamReader(path))
       {
-        string str = streamReader.ReadLine();
-        if (!string.IsNullOrEmpty(str))
+        while (!streamReader.EndOfStream)
         {
-          this.ListBox2.Items.Add((object) str);
-          string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-          int result;
-          if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
-            this.monsterNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
+          string str = streamReader.ReadLine();
+          if (!string.IsNullOrEmpty(str))
+          {
+            this.ListBox2.Items.Add((object) str);
+            string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            int result;
+            if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
+              this.monsterNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
+            checked { ++count; }
+          }
         }
       }
+      EditorLogger.LogInfo("Loaded monster definitions from text file '" + path + "' with " + Conversions.ToString(count) + " entry(ies).");
+    }
+    catch (Exception ex)
+    {
+      EditorLogger.LogError("Failed to read Monster.txt from '" + path + "'.", ex);
+      throw;
     }
   }
 
@@ -2195,6 +2301,7 @@ public class Form1 : Form
       this.ListBox2.Items.Add((object) str);
       this.monsterNames[monster.Index] = monster.Name;
     }
+    EditorLogger.LogInfo("Applied " + Conversions.ToString(this.monsterNames.Count) + " monster definition(s) to the list.");
   }
 
   public void punti()
@@ -2225,6 +2332,7 @@ public class Form1 : Form
       catch (Exception ex)
       {
         ProjectData.SetProjectError(ex);
+        EditorLogger.LogError("Failed to draw spawn point at list index " + Conversions.ToString(index) + ".", ex);
         ProjectData.ClearProjectError();
       }
       checked { ++index; }
