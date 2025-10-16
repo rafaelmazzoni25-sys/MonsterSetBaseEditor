@@ -14,8 +14,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-#nullable disable
-namespace MonasterSetBase.My;
+namespace MonasterSetBase.My
+{
 
 [EditorBrowsable(EditorBrowsableState.Advanced)]
 [GeneratedCode("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "9.0.0.0")]
@@ -70,4 +70,6 @@ internal sealed class MySettings : ApplicationSettingsBase
       return MySettings.defaultInstance;
     }
   }
+}
+
 }

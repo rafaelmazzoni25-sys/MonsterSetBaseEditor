@@ -13,8 +13,8 @@ using System.Globalization;
 using System.Resources;
 using System.Runtime.CompilerServices;
 
-#nullable disable
-namespace MonasterSetBase.My.Resources;
+namespace MonasterSetBase.My.Resources
+{
 
 [CompilerGenerated]
 [DebuggerNonUserCode]
@@ -43,4 +43,6 @@ internal sealed class Resources
     get => MonasterSetBase.My.Resources.Resources.resourceCulture;
     set => MonasterSetBase.My.Resources.Resources.resourceCulture = value;
   }
+}
+
 }
