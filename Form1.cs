@@ -154,6 +154,7 @@ public class Form1 : Form
   private readonly Dictionary<int, string> mapNames = new Dictionary<int, string>();
   private readonly Dictionary<int, string> monsterNames = new Dictionary<int, string>();
   private readonly Dictionary<string, string> spotDescriptions = new Dictionary<string, string>();
+  private readonly Dictionary<int, string> spawnMapNames = new Dictionary<int, string>();
 
   public Form1()
   {
@@ -1792,6 +1793,7 @@ public class Form1 : Form
   private void LoadSpawnText(string filePath)
   {
     this.spotDescriptions.Clear();
+    this.spawnMapNames.Clear();
     using (StreamReader streamReader = new StreamReader(filePath))
     {
       while (!streamReader.EndOfStream)
@@ -1803,6 +1805,7 @@ public class Form1 : Form
   private void LoadSpawnXml(string filePath)
   {
     this.spotDescriptions.Clear();
+    this.spawnMapNames.Clear();
     MonsterSpawnDocument monsterSpawnDocument;
     XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
     using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -1814,6 +1817,8 @@ public class Form1 : Form
       if (map.Spots == null)
         continue;
       string mapName = this.ResolveMapName(map.Number, map.Name);
+      if (!string.IsNullOrEmpty(mapName))
+        this.spawnMapNames[map.Number] = mapName;
       foreach (MonsterSpot spot in map.Spots)
       {
         string key = this.GetSpotDescriptionKey(map.Number, spot.Type);
@@ -1950,14 +1955,20 @@ public class Form1 : Form
     {
       monsterMap = new MonsterMap();
       monsterMap.Number = mapNumber;
-      monsterMap.Name = this.ResolveMapName(mapNumber, string.Empty);
+      monsterMap.Name = this.ResolveMapName(mapNumber, this.GetSpawnMapName(mapNumber));
+      if (monsterMap.Spots == null)
+        monsterMap.Spots = new List<MonsterSpot>();
       maps.Add(mapNumber, monsterMap);
     }
+    else if (monsterMap.Spots == null)
+      monsterMap.Spots = new List<MonsterSpot>();
     return monsterMap;
   }
 
   private MonsterSpot GetOrCreateSpot(MonsterMap map, int type)
   {
+    if (map.Spots == null)
+      map.Spots = new List<MonsterSpot>();
     MonsterSpot monsterSpot = map.Spots.FirstOrDefault<MonsterSpot>((Func<MonsterSpot, bool>) (s => s.Type == type));
     if (monsterSpot == null)
     {
@@ -1975,6 +1986,14 @@ public class Form1 : Form
     if (this.spotDescriptions.TryGetValue(this.GetSpotDescriptionKey(mapNumber, type), out str) && !string.IsNullOrEmpty(str))
       return str;
     return GetSpotDescription(type);
+  }
+
+  private string GetSpawnMapName(int mapNumber)
+  {
+    string str;
+    if (this.spawnMapNames.TryGetValue(mapNumber, out str) && !string.IsNullOrEmpty(str))
+      return str;
+    return string.Empty;
   }
 
   private string GetSpotDescriptionKey(int mapNumber, int type)
@@ -2064,6 +2083,9 @@ public class Form1 : Form
     string str;
     if (this.mapNames.TryGetValue(mapNumber, out str))
       return str;
+    string spawnMapName = this.GetSpawnMapName(mapNumber);
+    if (!string.IsNullOrEmpty(spawnMapName))
+      return spawnMapName;
     if (!string.IsNullOrEmpty(fallbackName))
       return fallbackName;
     return mapNumber.ToString((IFormatProvider) CultureInfo.InvariantCulture);
