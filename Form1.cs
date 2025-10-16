@@ -1477,9 +1477,9 @@ public class Form1 : Form
     {
       string extension = Path.GetExtension(this.OpenFileDialog1.FileName);
       if (string.Equals(extension, ".xml", StringComparison.OrdinalIgnoreCase))
-        this.LoadSpawnXml(this.OpenFileDialog1.FileName);
+        this.LoadSpawnXmlFile(this.OpenFileDialog1.FileName);
       else
-        this.LoadSpawnText(this.OpenFileDialog1.FileName);
+        this.LoadSpawnTextFile(this.OpenFileDialog1.FileName);
     }
     catch (Exception ex)
     {
@@ -1513,7 +1513,7 @@ public class Form1 : Form
     string extension = Path.GetExtension(this.SaveFileDialog1.FileName);
     if (string.Equals(extension, ".xml", StringComparison.OrdinalIgnoreCase))
     {
-      this.SaveSpawnXml(this.SaveFileDialog1.FileName);
+      this.SaveSpawnXmlFile(this.SaveFileDialog1.FileName);
     }
     else
     {
@@ -1767,7 +1767,7 @@ public class Form1 : Form
   {
     try
     {
-      this.LoadMapList();
+      this.LoadMapListEntries();
     }
     catch (Exception ex)
     {
@@ -1778,8 +1778,8 @@ public class Form1 : Form
     }
     try
     {
-      if (!this.TryLoadMonsterListFromXml())
-        this.LoadMonsterListFromText();
+      if (!this.TryLoadMonsterListXml())
+        this.LoadMonsterListText();
     }
     catch (Exception ex)
     {
@@ -1790,7 +1790,7 @@ public class Form1 : Form
     }
   }
 
-  private void LoadSpawnText(string filePath)
+  private void LoadSpawnTextFile(string filePath)
   {
     this.spotDescriptions.Clear();
     this.spawnMapNames.Clear();
@@ -1802,7 +1802,7 @@ public class Form1 : Form
     this.Inizio = (object) 0;
   }
 
-  private void LoadSpawnXml(string filePath)
+  private void LoadSpawnXmlFile(string filePath)
   {
     this.spotDescriptions.Clear();
     this.spawnMapNames.Clear();
@@ -1816,21 +1816,21 @@ public class Form1 : Form
     {
       if (map.Spots == null)
         continue;
-      string mapName = this.ResolveMapName(map.Number, map.Name);
+      string mapName = this.ResolveMapDisplayName(map.Number, map.Name);
       if (!string.IsNullOrEmpty(mapName))
         this.spawnMapNames[map.Number] = mapName;
       foreach (MonsterSpot spot in map.Spots)
       {
-        string key = this.GetSpotDescriptionKey(map.Number, spot.Type);
+        string key = this.BuildSpotDescriptionKey(map.Number, spot.Type);
         if (!string.IsNullOrEmpty(spot.Description))
           this.spotDescriptions[key] = spot.Description;
         else if (this.spotDescriptions.ContainsKey(key))
           this.spotDescriptions.Remove(key);
-        this.AddSpotHeader(mapName, spot.Type, spot.Description);
+        this.AddSpotHeaderLines(mapName, spot.Type, spot.Description);
         if (spot.Spawns != null)
         {
           foreach (MonsterSpawnEntry spawn in spot.Spawns)
-            this.ListBox1.Items.Add((object) this.FormatSpawnLine(map, spot, spawn));
+            this.ListBox1.Items.Add((object) this.FormatSpawnListEntry(map, spot, spawn));
         }
         this.ListBox1.Items.Add((object) "end");
       }
@@ -1838,9 +1838,9 @@ public class Form1 : Form
     this.Inizio = (object) 0;
   }
 
-  private void SaveSpawnXml(string filePath)
+  private void SaveSpawnXmlFile(string filePath)
   {
-    MonsterSpawnDocument monsterSpawnDocument = this.BuildSpawnDocumentFromList();
+    MonsterSpawnDocument monsterSpawnDocument = this.BuildSpawnDocument();
     XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
     XmlWriterSettings settings = new XmlWriterSettings();
     settings.Indent = true;
@@ -1854,7 +1854,7 @@ public class Form1 : Form
     }
   }
 
-  private MonsterSpawnDocument BuildSpawnDocumentFromList()
+  private MonsterSpawnDocument BuildSpawnDocument()
   {
     Dictionary<int, MonsterMap> dictionary = new Dictionary<int, MonsterMap>();
     int num = -1;
@@ -1869,7 +1869,7 @@ public class Form1 : Form
         {
           if (trimmed.StartsWith("//\t", StringComparison.Ordinal))
           {
-            currentSpotDescription = ParseSpotCommentDescription(trimmed);
+            currentSpotDescription = ParseSpotComment(trimmed);
             continue;
           }
           if (trimmed.StartsWith("//", StringComparison.Ordinal))
@@ -1896,14 +1896,14 @@ public class Form1 : Form
           }
           else if (strArray.Length < 6)
             continue;
-          int? nullable1 = this.ParseNullableInt(strArray[0]);
-          int? nullable2 = this.ParseNullableInt(strArray[1]);
-          int? nullable3 = this.ParseNullableInt(strArray[2]);
-          int? nullable4 = this.ParseNullableInt(strArray[3]);
-          int? nullable5 = this.ParseNullableInt(strArray[4]);
+          int? nullable1 = this.ParseNullableInt32(strArray[0]);
+          int? nullable2 = this.ParseNullableInt32(strArray[1]);
+          int? nullable3 = this.ParseNullableInt32(strArray[2]);
+          int? nullable4 = this.ParseNullableInt32(strArray[3]);
+          int? nullable5 = this.ParseNullableInt32(strArray[4]);
           if (!nullable1.HasValue || !nullable2.HasValue || (!nullable3.HasValue || !nullable4.HasValue) || !nullable5.HasValue)
             continue;
-          string spotKey = this.GetSpotDescriptionKey(nullable2.Value, num);
+          string spotKey = this.BuildSpotDescriptionKey(nullable2.Value, num);
           if (!string.IsNullOrEmpty(currentSpotDescription))
           {
             this.spotDescriptions[spotKey] = currentSpotDescription;
@@ -1915,8 +1915,8 @@ public class Form1 : Form
               this.spotDescriptions.Remove(spotKey);
             currentSpotDescription = (string) null;
           }
-          MonsterMap map = this.GetOrCreateMap(dictionary, nullable2.Value);
-          MonsterSpot spot = this.GetOrCreateSpot(map, num);
+          MonsterMap map = this.GetOrCreateMapEntry(dictionary, nullable2.Value);
+          MonsterSpot spot = this.GetOrCreateSpotEntry(map, num);
           MonsterSpawnEntry monsterSpawnEntry = new MonsterSpawnEntry();
           monsterSpawnEntry.Index = nullable1.Value;
           monsterSpawnEntry.Distance = nullable3.Value;
@@ -1924,19 +1924,19 @@ public class Form1 : Form
           monsterSpawnEntry.StartY = nullable5.Value;
           if (num == 1 || num == 3)
           {
-            monsterSpawnEntry.EndX = this.ParseNullableInt(strArray[5]);
+            monsterSpawnEntry.EndX = this.ParseNullableInt32(strArray[5]);
             if (!monsterSpawnEntry.EndX.HasValue)
               monsterSpawnEntry.EndX = new int?(monsterSpawnEntry.StartX);
-            monsterSpawnEntry.EndY = this.ParseNullableInt(strArray[6]);
+            monsterSpawnEntry.EndY = this.ParseNullableInt32(strArray[6]);
             if (!monsterSpawnEntry.EndY.HasValue)
               monsterSpawnEntry.EndY = new int?(monsterSpawnEntry.StartY);
-            monsterSpawnEntry.Direction = this.ParseNullableInt(strArray[7]).GetValueOrDefault();
-            monsterSpawnEntry.Count = this.ParseNullableInt(strArray[8]);
+            monsterSpawnEntry.Direction = this.ParseNullableInt32(strArray[7]).GetValueOrDefault();
+            monsterSpawnEntry.Count = this.ParseNullableInt32(strArray[8]);
             if (num == 3)
-              monsterSpawnEntry.Element = strArray.Length > 9 ? this.ParseNullableInt(strArray[9]) : new int?();
+              monsterSpawnEntry.Element = strArray.Length > 9 ? this.ParseNullableInt32(strArray[9]) : new int?();
           }
           else
-            monsterSpawnEntry.Direction = this.ParseNullableInt(strArray[5]).GetValueOrDefault();
+            monsterSpawnEntry.Direction = this.ParseNullableInt32(strArray[5]).GetValueOrDefault();
           spot.Spawns.Add(monsterSpawnEntry);
         }
       }
@@ -1948,14 +1948,14 @@ public class Form1 : Form
     return monsterSpawnDocument;
   }
 
-  private MonsterMap GetOrCreateMap(Dictionary<int, MonsterMap> maps, int mapNumber)
+  private MonsterMap GetOrCreateMapEntry(Dictionary<int, MonsterMap> maps, int mapNumber)
   {
     MonsterMap monsterMap;
     if (!maps.TryGetValue(mapNumber, out monsterMap))
     {
       monsterMap = new MonsterMap();
       monsterMap.Number = mapNumber;
-      monsterMap.Name = this.ResolveMapName(mapNumber, this.GetSpawnMapName(mapNumber));
+      monsterMap.Name = this.ResolveMapDisplayName(mapNumber, this.LookupSpawnMapName(mapNumber));
       if (monsterMap.Spots == null)
         monsterMap.Spots = new List<MonsterSpot>();
       maps.Add(mapNumber, monsterMap);
@@ -1965,7 +1965,7 @@ public class Form1 : Form
     return monsterMap;
   }
 
-  private MonsterSpot GetOrCreateSpot(MonsterMap map, int type)
+  private MonsterSpot GetOrCreateSpotEntry(MonsterMap map, int type)
   {
     if (map.Spots == null)
       map.Spots = new List<MonsterSpot>();
@@ -1974,21 +1974,21 @@ public class Form1 : Form
     {
       monsterSpot = new MonsterSpot();
       monsterSpot.Type = type;
-      monsterSpot.Description = this.ResolveSpotDescription(map.Number, type);
+      monsterSpot.Description = this.ResolveSpotDescriptionText(map.Number, type);
       map.Spots.Add(monsterSpot);
     }
     return monsterSpot;
   }
 
-  private string ResolveSpotDescription(int mapNumber, int type)
+  private string ResolveSpotDescriptionText(int mapNumber, int type)
   {
     string str;
-    if (this.spotDescriptions.TryGetValue(this.GetSpotDescriptionKey(mapNumber, type), out str) && !string.IsNullOrEmpty(str))
+    if (this.spotDescriptions.TryGetValue(this.BuildSpotDescriptionKey(mapNumber, type), out str) && !string.IsNullOrEmpty(str))
       return str;
-    return GetSpotDescription(type);
+    return GetDefaultSpotDescription(type);
   }
 
-  private string GetSpawnMapName(int mapNumber)
+  private string LookupSpawnMapName(int mapNumber)
   {
     string str;
     if (this.spawnMapNames.TryGetValue(mapNumber, out str) && !string.IsNullOrEmpty(str))
@@ -1996,22 +1996,22 @@ public class Form1 : Form
     return string.Empty;
   }
 
-  private string GetSpotDescriptionKey(int mapNumber, int type)
+  private string BuildSpotDescriptionKey(int mapNumber, int type)
   {
     return mapNumber.ToString((IFormatProvider) CultureInfo.InvariantCulture) + ":" + type.ToString((IFormatProvider) CultureInfo.InvariantCulture);
   }
 
-  private void AddSpotHeader(string mapName, int type, string description)
+  private void AddSpotHeaderLines(string mapName, int type, string description)
   {
-    string str = string.IsNullOrEmpty(description) ? GetSpotDescription(type) : description;
+    string str = string.IsNullOrEmpty(description) ? GetDefaultSpotDescription(type) : description;
     this.ListBox1.Items.Add((object) SectionSeparator);
     this.ListBox1.Items.Add((object) ("//\t" + mapName + " " + str));
     this.ListBox1.Items.Add((object) SectionSeparator);
-    this.ListBox1.Items.Add((object) GetSpotHeader(type));
+    this.ListBox1.Items.Add((object) GetSpotHeaderLine(type));
     this.ListBox1.Items.Add((object) type.ToString((IFormatProvider) CultureInfo.InvariantCulture));
   }
 
-  private static string GetSpotDescription(int type)
+  private static string GetDefaultSpotDescription(int type)
   {
     switch (type)
     {
@@ -2030,7 +2030,7 @@ public class Form1 : Form
     }
   }
 
-  private static string GetSpotHeader(int type)
+  private static string GetSpotHeaderLine(int type)
   {
     if (type == 1)
       return "//Mob\tMap\tRadio\tCordX\tCordY\tCordX2\tCordY2\tDir \tQuant  Name";
@@ -2039,9 +2039,9 @@ public class Form1 : Form
     return "//Mob\tMap\tRad\tX\tY\tStr\tName";
   }
 
-  private string FormatSpawnLine(MonsterMap map, MonsterSpot spot, MonsterSpawnEntry spawn)
+  private string FormatSpawnListEntry(MonsterMap map, MonsterSpot spot, MonsterSpawnEntry spawn)
   {
-    string monsterName = this.GetMonsterName(spawn.Index);
+    string monsterName = this.LookupMonsterName(spawn.Index);
     if (spot.Type == 1 || spot.Type == 3)
     {
       int num1 = spawn.EndX.HasValue ? spawn.EndX.Value : spawn.StartX;
@@ -2057,7 +2057,7 @@ public class Form1 : Form
     return string.Format((IFormatProvider) CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t// {6}", (object) spawn.Index, (object) map.Number, (object) spawn.Distance, (object) spawn.StartX, (object) spawn.StartY, (object) spawn.Direction, (object) monsterName);
   }
 
-  private static string ParseSpotCommentDescription(string line)
+  private static string ParseSpotComment(string line)
   {
     if (string.IsNullOrEmpty(line))
       return (string) null;
@@ -2070,7 +2070,7 @@ public class Form1 : Form
     return str.Substring(num + 1).Trim();
   }
 
-  private string GetMonsterName(int index)
+  private string LookupMonsterName(int index)
   {
     string str;
     if (this.monsterNames.TryGetValue(index, out str))
@@ -2078,12 +2078,12 @@ public class Form1 : Form
     return "Monster " + index.ToString((IFormatProvider) CultureInfo.InvariantCulture);
   }
 
-  private string ResolveMapName(int mapNumber, string fallbackName)
+  private string ResolveMapDisplayName(int mapNumber, string fallbackName)
   {
     string str;
     if (this.mapNames.TryGetValue(mapNumber, out str))
       return str;
-    string spawnMapName = this.GetSpawnMapName(mapNumber);
+    string spawnMapName = this.LookupSpawnMapName(mapNumber);
     if (!string.IsNullOrEmpty(spawnMapName))
       return spawnMapName;
     if (!string.IsNullOrEmpty(fallbackName))
@@ -2091,7 +2091,7 @@ public class Form1 : Form
     return mapNumber.ToString((IFormatProvider) CultureInfo.InvariantCulture);
   }
 
-  private static string StripComment(string value)
+  private static string StripLineComment(string value)
   {
     if (value == null)
       return string.Empty;
@@ -2101,16 +2101,16 @@ public class Form1 : Form
     return value.Trim();
   }
 
-  private int? ParseNullableInt(string value)
+  private int? ParseNullableInt32(string value)
   {
-    string s = StripComment(value);
+    string s = StripLineComment(value);
     if (s.Length == 0)
       return new int?();
     int result;
     return int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out result) ? new int?(result) : new int?();
   }
 
-  private void LoadMapList()
+  private void LoadMapListEntries()
   {
     this.ComboBox1.Items.Clear();
     this.mapNames.Clear();
@@ -2132,7 +2132,7 @@ public class Form1 : Form
     }
   }
 
-  private bool TryLoadMonsterListFromXml()
+  private bool TryLoadMonsterListXml()
   {
     string[] strArray = new string[2]
     {
@@ -2149,7 +2149,7 @@ public class Form1 : Form
           using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
           {
             MonsterDefinitionList definitionList = (MonsterDefinitionList) xmlSerializer.Deserialize((Stream) fileStream);
-            this.ApplyMonsterDefinitions(definitionList);
+            this.ApplyMonsterDefinitionsToList(definitionList);
             return true;
           }
         }
@@ -2161,7 +2161,7 @@ public class Form1 : Form
     return false;
   }
 
-  private void LoadMonsterListFromText()
+  private void LoadMonsterListText()
   {
     string path = Path.Combine(this.CurrDir, "Monster.txt");
     this.ListBox2.Items.Clear();
@@ -2183,821 +2183,7 @@ public class Form1 : Form
     }
   }
 
-  private void ApplyMonsterDefinitions(MonsterDefinitionList definitions)
-  {
-    this.ListBox2.Items.Clear();
-    this.monsterNames.Clear();
-    if (definitions == null || definitions.Monsters == null)
-      return;
-    foreach (MonsterDefinition monster in definitions.Monsters.OrderBy<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)))
-    {
-      string str = monster.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + " " + monster.Name;
-      this.ListBox2.Items.Add((object) str);
-      this.monsterNames[monster.Index] = monster.Name;
-    }
-  }
-
-  private void LoadSpawnText(string filePath)
-  {
-    this.spotDescriptions.Clear();
-    this.spawnMapNames.Clear();
-    using (StreamReader streamReader = new StreamReader(filePath))
-    {
-      while (!streamReader.EndOfStream)
-        this.ListBox1.Items.Add((object) streamReader.ReadLine());
-    }
-    this.Inizio = (object) 0;
-  }
-
-  private void LoadSpawnXml(string filePath)
-  {
-    this.spotDescriptions.Clear();
-    this.spawnMapNames.Clear();
-    MonsterSpawnDocument monsterSpawnDocument;
-    XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
-    using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-      monsterSpawnDocument = (MonsterSpawnDocument) xmlSerializer.Deserialize((Stream) fileStream);
-    if (monsterSpawnDocument == null || monsterSpawnDocument.Maps == null)
-      return;
-    foreach (MonsterMap map in monsterSpawnDocument.Maps)
-    {
-      if (map.Spots == null)
-        continue;
-      string mapName = this.ResolveMapName(map.Number, map.Name);
-      if (!string.IsNullOrEmpty(mapName))
-        this.spawnMapNames[map.Number] = mapName;
-      foreach (MonsterSpot spot in map.Spots)
-      {
-        string key = this.GetSpotDescriptionKey(map.Number, spot.Type);
-        if (!string.IsNullOrEmpty(spot.Description))
-          this.spotDescriptions[key] = spot.Description;
-        else if (this.spotDescriptions.ContainsKey(key))
-          this.spotDescriptions.Remove(key);
-        this.AddSpotHeader(mapName, spot.Type, spot.Description);
-        if (spot.Spawns != null)
-        {
-          foreach (MonsterSpawnEntry spawn in spot.Spawns)
-            this.ListBox1.Items.Add((object) this.FormatSpawnLine(map, spot, spawn));
-        }
-        this.ListBox1.Items.Add((object) "end");
-      }
-    }
-    this.Inizio = (object) 0;
-  }
-
-  private void SaveSpawnXml(string filePath)
-  {
-    MonsterSpawnDocument monsterSpawnDocument = this.BuildSpawnDocumentFromList();
-    XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
-    XmlWriterSettings settings = new XmlWriterSettings();
-    settings.Indent = true;
-    settings.IndentChars = "  ";
-    settings.NewLineHandling = NewLineHandling.Replace;
-    settings.NewLineChars = Environment.NewLine;
-    using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-    {
-      using (XmlWriter xmlWriter = XmlWriter.Create((Stream) fileStream, settings))
-        xmlSerializer.Serialize(xmlWriter, (object) monsterSpawnDocument);
-    }
-  }
-
-  private MonsterSpawnDocument BuildSpawnDocumentFromList()
-  {
-    Dictionary<int, MonsterMap> dictionary = new Dictionary<int, MonsterMap>();
-    int num = -1;
-    string currentSpotDescription = (string) null;
-    foreach (object obj in this.ListBox1.Items)
-    {
-      string str = Conversions.ToString(obj);
-      if (!string.IsNullOrEmpty(str))
-      {
-        string trimmed = str.Trim();
-        if (trimmed.Length != 0)
-        {
-          if (trimmed.StartsWith("//\t", StringComparison.Ordinal))
-          {
-            currentSpotDescription = ParseSpotCommentDescription(trimmed);
-            continue;
-          }
-          if (trimmed.StartsWith("//", StringComparison.Ordinal))
-            continue;
-          if (string.Equals(trimmed, "end", StringComparison.OrdinalIgnoreCase))
-          {
-            num = -1;
-            currentSpotDescription = (string) null;
-            continue;
-          }
-          int result;
-          if (int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out result) && trimmed.IndexOf('\t') < 0)
-          {
-            num = result;
-            continue;
-          }
-          if (num == -1)
-            continue;
-          string[] strArray = str.Split('\t');
-          if (num == 1 || num == 3)
-          {
-            if (strArray.Length < 9)
-              continue;
-          }
-          else if (strArray.Length < 6)
-            continue;
-          int? nullable1 = this.ParseNullableInt(strArray[0]);
-          int? nullable2 = this.ParseNullableInt(strArray[1]);
-          int? nullable3 = this.ParseNullableInt(strArray[2]);
-          int? nullable4 = this.ParseNullableInt(strArray[3]);
-          int? nullable5 = this.ParseNullableInt(strArray[4]);
-          if (!nullable1.HasValue || !nullable2.HasValue || (!nullable3.HasValue || !nullable4.HasValue) || !nullable5.HasValue)
-            continue;
-          string spotKey = this.GetSpotDescriptionKey(nullable2.Value, num);
-          if (!string.IsNullOrEmpty(currentSpotDescription))
-          {
-            this.spotDescriptions[spotKey] = currentSpotDescription;
-            currentSpotDescription = (string) null;
-          }
-          else if (currentSpotDescription != null)
-          {
-            if (this.spotDescriptions.ContainsKey(spotKey))
-              this.spotDescriptions.Remove(spotKey);
-            currentSpotDescription = (string) null;
-          }
-          MonsterMap map = this.GetOrCreateMap(dictionary, nullable2.Value);
-          MonsterSpot spot = this.GetOrCreateSpot(map, num);
-          MonsterSpawnEntry monsterSpawnEntry = new MonsterSpawnEntry();
-          monsterSpawnEntry.Index = nullable1.Value;
-          monsterSpawnEntry.Distance = nullable3.Value;
-          monsterSpawnEntry.StartX = nullable4.Value;
-          monsterSpawnEntry.StartY = nullable5.Value;
-          if (num == 1 || num == 3)
-          {
-            monsterSpawnEntry.EndX = this.ParseNullableInt(strArray[5]);
-            if (!monsterSpawnEntry.EndX.HasValue)
-              monsterSpawnEntry.EndX = new int?(monsterSpawnEntry.StartX);
-            monsterSpawnEntry.EndY = this.ParseNullableInt(strArray[6]);
-            if (!monsterSpawnEntry.EndY.HasValue)
-              monsterSpawnEntry.EndY = new int?(monsterSpawnEntry.StartY);
-            monsterSpawnEntry.Direction = this.ParseNullableInt(strArray[7]).GetValueOrDefault();
-            monsterSpawnEntry.Count = this.ParseNullableInt(strArray[8]);
-            if (num == 3)
-              monsterSpawnEntry.Element = strArray.Length > 9 ? this.ParseNullableInt(strArray[9]) : new int?();
-          }
-          else
-            monsterSpawnEntry.Direction = this.ParseNullableInt(strArray[5]).GetValueOrDefault();
-          spot.Spawns.Add(monsterSpawnEntry);
-        }
-      }
-    }
-    MonsterSpawnDocument monsterSpawnDocument = new MonsterSpawnDocument();
-    monsterSpawnDocument.Maps = dictionary.Values.OrderBy<MonsterMap, int>((Func<MonsterMap, int>) (m => m.Number)).ToList<MonsterMap>();
-    foreach (MonsterMap map in monsterSpawnDocument.Maps)
-      map.Spots = map.Spots.OrderBy<MonsterSpot, int>((Func<MonsterSpot, int>) (s => s.Type)).ToList<MonsterSpot>();
-    return monsterSpawnDocument;
-  }
-
-  private MonsterMap GetOrCreateMap(Dictionary<int, MonsterMap> maps, int mapNumber)
-  {
-    MonsterMap monsterMap;
-    if (!maps.TryGetValue(mapNumber, out monsterMap))
-    {
-      monsterMap = new MonsterMap();
-      monsterMap.Number = mapNumber;
-      monsterMap.Name = this.ResolveMapName(mapNumber, this.GetSpawnMapName(mapNumber));
-      if (monsterMap.Spots == null)
-        monsterMap.Spots = new List<MonsterSpot>();
-      maps.Add(mapNumber, monsterMap);
-    }
-    else if (monsterMap.Spots == null)
-      monsterMap.Spots = new List<MonsterSpot>();
-    return monsterMap;
-  }
-
-  private MonsterSpot GetOrCreateSpot(MonsterMap map, int type)
-  {
-    if (map.Spots == null)
-      map.Spots = new List<MonsterSpot>();
-    MonsterSpot monsterSpot = map.Spots.FirstOrDefault<MonsterSpot>((Func<MonsterSpot, bool>) (s => s.Type == type));
-    if (monsterSpot == null)
-    {
-      monsterSpot = new MonsterSpot();
-      monsterSpot.Type = type;
-      monsterSpot.Description = this.ResolveSpotDescription(map.Number, type);
-      map.Spots.Add(monsterSpot);
-    }
-    return monsterSpot;
-  }
-
-  private string ResolveSpotDescription(int mapNumber, int type)
-  {
-    string str;
-    if (this.spotDescriptions.TryGetValue(this.GetSpotDescriptionKey(mapNumber, type), out str) && !string.IsNullOrEmpty(str))
-      return str;
-    return GetSpotDescription(type);
-  }
-
-  private string GetSpawnMapName(int mapNumber)
-  {
-    string str;
-    if (this.spawnMapNames.TryGetValue(mapNumber, out str) && !string.IsNullOrEmpty(str))
-      return str;
-    return string.Empty;
-  }
-
-  private string GetSpotDescriptionKey(int mapNumber, int type)
-  {
-    return mapNumber.ToString((IFormatProvider) CultureInfo.InvariantCulture) + ":" + type.ToString((IFormatProvider) CultureInfo.InvariantCulture);
-  }
-
-  private void AddSpotHeader(string mapName, int type, string description)
-  {
-    string str = string.IsNullOrEmpty(description) ? GetSpotDescription(type) : description;
-    this.ListBox1.Items.Add((object) SectionSeparator);
-    this.ListBox1.Items.Add((object) ("//\t" + mapName + " " + str));
-    this.ListBox1.Items.Add((object) SectionSeparator);
-    this.ListBox1.Items.Add((object) GetSpotHeader(type));
-    this.ListBox1.Items.Add((object) type.ToString((IFormatProvider) CultureInfo.InvariantCulture));
-  }
-
-  private static string GetSpotDescription(int type)
-  {
-    switch (type)
-    {
-      case 0:
-        return "Guards / NPC / Traps";
-      case 1:
-        return "Spots";
-      case 2:
-        return "Monster";
-      case 3:
-        return "Golden Monster";
-      case 4:
-        return "Blood Castle Monsters / Gate";
-      default:
-        return "Spot";
-    }
-  }
-
-  private static string GetSpotHeader(int type)
-  {
-    if (type == 1)
-      return "//Mob\tMap\tRadio\tCordX\tCordY\tCordX2\tCordY2\tDir \tQuant  Name";
-    if (type == 3)
-      return "//Mob\tMap\tRadio\tCordX\tCordY\tCordX2\tCordY2\tDir \tQuant\tElement\tName";
-    return "//Mob\tMap\tRad\tX\tY\tStr\tName";
-  }
-
-  private string FormatSpawnLine(MonsterMap map, MonsterSpot spot, MonsterSpawnEntry spawn)
-  {
-    string monsterName = this.GetMonsterName(spawn.Index);
-    if (spot.Type == 1 || spot.Type == 3)
-    {
-      int num1 = spawn.EndX.HasValue ? spawn.EndX.Value : spawn.StartX;
-      int num2 = spawn.EndY.HasValue ? spawn.EndY.Value : spawn.StartY;
-      int num3 = spawn.Count.HasValue ? spawn.Count.Value : 0;
-      if (spot.Type == 3)
-      {
-        string element = spawn.Element.HasValue ? spawn.Element.Value.ToString((IFormatProvider) CultureInfo.InvariantCulture) : string.Empty;
-        return string.Format((IFormatProvider) CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t// {10}", (object) spawn.Index, (object) map.Number, (object) spawn.Distance, (object) spawn.StartX, (object) spawn.StartY, (object) num1, (object) num2, (object) spawn.Direction, (object) num3, (object) element, (object) monsterName);
-      }
-      return string.Format((IFormatProvider) CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t// {9}", (object) spawn.Index, (object) map.Number, (object) spawn.Distance, (object) spawn.StartX, (object) spawn.StartY, (object) num1, (object) num2, (object) spawn.Direction, (object) num3, (object) monsterName);
-    }
-    return string.Format((IFormatProvider) CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t// {6}", (object) spawn.Index, (object) map.Number, (object) spawn.Distance, (object) spawn.StartX, (object) spawn.StartY, (object) spawn.Direction, (object) monsterName);
-  }
-
-  private static string ParseSpotCommentDescription(string line)
-  {
-    if (string.IsNullOrEmpty(line))
-      return (string) null;
-    string str = line.Substring(3).Trim();
-    if (str.Length == 0)
-      return string.Empty;
-    int num = str.IndexOf(' ');
-    if (num < 0)
-      return string.Empty;
-    return str.Substring(num + 1).Trim();
-  }
-
-  private string GetMonsterName(int index)
-  {
-    string str;
-    if (this.monsterNames.TryGetValue(index, out str))
-      return str;
-    return "Monster " + index.ToString((IFormatProvider) CultureInfo.InvariantCulture);
-  }
-
-  private string ResolveMapName(int mapNumber, string fallbackName)
-  {
-    string str;
-    if (this.mapNames.TryGetValue(mapNumber, out str))
-      return str;
-    string spawnMapName = this.GetSpawnMapName(mapNumber);
-    if (!string.IsNullOrEmpty(spawnMapName))
-      return spawnMapName;
-    if (!string.IsNullOrEmpty(fallbackName))
-      return fallbackName;
-    return mapNumber.ToString((IFormatProvider) CultureInfo.InvariantCulture);
-  }
-
-  private static string StripComment(string value)
-  {
-    if (value == null)
-      return string.Empty;
-    int length = value.IndexOf("//", StringComparison.Ordinal);
-    if (length >= 0)
-      value = value.Substring(0, length);
-    return value.Trim();
-  }
-
-  private int? ParseNullableInt(string value)
-  {
-    string s = StripComment(value);
-    if (s.Length == 0)
-      return new int?();
-    int result;
-    return int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out result) ? new int?(result) : new int?();
-  }
-
-  private void LoadMapList()
-  {
-    this.ComboBox1.Items.Clear();
-    this.mapNames.Clear();
-    string path = Path.Combine(this.CurrDir, "Maps.txt");
-    using (StreamReader streamReader = new StreamReader(path))
-    {
-      while (!streamReader.EndOfStream)
-      {
-        string str = streamReader.ReadLine();
-        if (!string.IsNullOrEmpty(str))
-        {
-          this.ComboBox1.Items.Add((object) str);
-          string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-          int result;
-          if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
-            this.mapNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
-        }
-      }
-    }
-  }
-
-  private bool TryLoadMonsterListFromXml()
-  {
-    string[] strArray = new string[2]
-    {
-      Path.Combine(this.CurrDir, "IGC_MonsterList.xml"),
-      Path.Combine(this.CurrDir, "IGC_Monster.xml")
-    };
-    foreach (string path in strArray)
-    {
-      if (File.Exists(path))
-      {
-        try
-        {
-          XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterDefinitionList));
-          using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
-          {
-            MonsterDefinitionList definitionList = (MonsterDefinitionList) xmlSerializer.Deserialize((Stream) fileStream);
-            this.ApplyMonsterDefinitions(definitionList);
-            return true;
-          }
-        }
-        catch (InvalidOperationException)
-        {
-        }
-      }
-    }
-    return false;
-  }
-
-  private void LoadMonsterListFromText()
-  {
-    string path = Path.Combine(this.CurrDir, "Monster.txt");
-    this.ListBox2.Items.Clear();
-    this.monsterNames.Clear();
-    using (StreamReader streamReader = new StreamReader(path))
-    {
-      while (!streamReader.EndOfStream)
-      {
-        string str = streamReader.ReadLine();
-        if (!string.IsNullOrEmpty(str))
-        {
-          this.ListBox2.Items.Add((object) str);
-          string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-          int result;
-          if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
-            this.monsterNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
-        }
-      }
-    }
-  }
-
-  private void ApplyMonsterDefinitions(MonsterDefinitionList definitions)
-  {
-    this.ListBox2.Items.Clear();
-    this.monsterNames.Clear();
-    if (definitions == null || definitions.Monsters == null)
-      return;
-    foreach (MonsterDefinition monster in definitions.Monsters.OrderBy<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)))
-    {
-      string str = monster.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + " " + monster.Name;
-      this.ListBox2.Items.Add((object) str);
-      this.monsterNames[monster.Index] = monster.Name;
-    }
-  }
-
-  private void LoadSpawnText(string filePath)
-  {
-    this.spotDescriptions.Clear();
-    this.spawnMapNames.Clear();
-    using (StreamReader streamReader = new StreamReader(filePath))
-    {
-      while (!streamReader.EndOfStream)
-        this.ListBox1.Items.Add((object) streamReader.ReadLine());
-    }
-    this.Inizio = (object) 0;
-  }
-
-  private void LoadSpawnXml(string filePath)
-  {
-    this.spotDescriptions.Clear();
-    this.spawnMapNames.Clear();
-    MonsterSpawnDocument monsterSpawnDocument;
-    XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
-    using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-      monsterSpawnDocument = (MonsterSpawnDocument) xmlSerializer.Deserialize((Stream) fileStream);
-    if (monsterSpawnDocument == null || monsterSpawnDocument.Maps == null)
-      return;
-    foreach (MonsterMap map in monsterSpawnDocument.Maps)
-    {
-      if (map.Spots == null)
-        continue;
-      string mapName = this.ResolveMapName(map.Number, map.Name);
-      if (!string.IsNullOrEmpty(mapName))
-        this.spawnMapNames[map.Number] = mapName;
-      foreach (MonsterSpot spot in map.Spots)
-      {
-        string key = this.GetSpotDescriptionKey(map.Number, spot.Type);
-        if (!string.IsNullOrEmpty(spot.Description))
-          this.spotDescriptions[key] = spot.Description;
-        else if (this.spotDescriptions.ContainsKey(key))
-          this.spotDescriptions.Remove(key);
-        this.AddSpotHeader(mapName, spot.Type, spot.Description);
-        if (spot.Spawns != null)
-        {
-          foreach (MonsterSpawnEntry spawn in spot.Spawns)
-            this.ListBox1.Items.Add((object) this.FormatSpawnLine(map, spot, spawn));
-        }
-        this.ListBox1.Items.Add((object) "end");
-      }
-    }
-    this.Inizio = (object) 0;
-  }
-
-  private void SaveSpawnXml(string filePath)
-  {
-    MonsterSpawnDocument monsterSpawnDocument = this.BuildSpawnDocumentFromList();
-    XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
-    XmlWriterSettings settings = new XmlWriterSettings();
-    settings.Indent = true;
-    settings.IndentChars = "  ";
-    settings.NewLineHandling = NewLineHandling.Replace;
-    settings.NewLineChars = Environment.NewLine;
-    using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-    {
-      using (XmlWriter xmlWriter = XmlWriter.Create((Stream) fileStream, settings))
-        xmlSerializer.Serialize(xmlWriter, (object) monsterSpawnDocument);
-    }
-  }
-
-  private MonsterSpawnDocument BuildSpawnDocumentFromList()
-  {
-    Dictionary<int, MonsterMap> dictionary = new Dictionary<int, MonsterMap>();
-    int num = -1;
-    string currentSpotDescription = (string) null;
-    foreach (object obj in this.ListBox1.Items)
-    {
-      string str = Conversions.ToString(obj);
-      if (!string.IsNullOrEmpty(str))
-      {
-        string trimmed = str.Trim();
-        if (trimmed.Length != 0)
-        {
-          if (trimmed.StartsWith("//\t", StringComparison.Ordinal))
-          {
-            currentSpotDescription = ParseSpotCommentDescription(trimmed);
-            continue;
-          }
-          if (trimmed.StartsWith("//", StringComparison.Ordinal))
-            continue;
-          if (string.Equals(trimmed, "end", StringComparison.OrdinalIgnoreCase))
-          {
-            num = -1;
-            currentSpotDescription = (string) null;
-            continue;
-          }
-          int result;
-          if (int.TryParse(trimmed, NumberStyles.Integer, CultureInfo.InvariantCulture, out result) && trimmed.IndexOf('\t') < 0)
-          {
-            num = result;
-            continue;
-          }
-          if (num == -1)
-            continue;
-          string[] strArray = str.Split('\t');
-          if (num == 1 || num == 3)
-          {
-            if (strArray.Length < 9)
-              continue;
-          }
-          else if (strArray.Length < 6)
-            continue;
-          int? nullable1 = this.ParseNullableInt(strArray[0]);
-          int? nullable2 = this.ParseNullableInt(strArray[1]);
-          int? nullable3 = this.ParseNullableInt(strArray[2]);
-          int? nullable4 = this.ParseNullableInt(strArray[3]);
-          int? nullable5 = this.ParseNullableInt(strArray[4]);
-          if (!nullable1.HasValue || !nullable2.HasValue || (!nullable3.HasValue || !nullable4.HasValue) || !nullable5.HasValue)
-            continue;
-          string spotKey = this.GetSpotDescriptionKey(nullable2.Value, num);
-          if (!string.IsNullOrEmpty(currentSpotDescription))
-          {
-            this.spotDescriptions[spotKey] = currentSpotDescription;
-            currentSpotDescription = (string) null;
-          }
-          else if (currentSpotDescription != null)
-          {
-            if (this.spotDescriptions.ContainsKey(spotKey))
-              this.spotDescriptions.Remove(spotKey);
-            currentSpotDescription = (string) null;
-          }
-          MonsterMap map = this.GetOrCreateMap(dictionary, nullable2.Value);
-          MonsterSpot spot = this.GetOrCreateSpot(map, num);
-          MonsterSpawnEntry monsterSpawnEntry = new MonsterSpawnEntry();
-          monsterSpawnEntry.Index = nullable1.Value;
-          monsterSpawnEntry.Distance = nullable3.Value;
-          monsterSpawnEntry.StartX = nullable4.Value;
-          monsterSpawnEntry.StartY = nullable5.Value;
-          if (num == 1 || num == 3)
-          {
-            monsterSpawnEntry.EndX = this.ParseNullableInt(strArray[5]);
-            if (!monsterSpawnEntry.EndX.HasValue)
-              monsterSpawnEntry.EndX = new int?(monsterSpawnEntry.StartX);
-            monsterSpawnEntry.EndY = this.ParseNullableInt(strArray[6]);
-            if (!monsterSpawnEntry.EndY.HasValue)
-              monsterSpawnEntry.EndY = new int?(monsterSpawnEntry.StartY);
-            monsterSpawnEntry.Direction = this.ParseNullableInt(strArray[7]).GetValueOrDefault();
-            monsterSpawnEntry.Count = this.ParseNullableInt(strArray[8]);
-            if (num == 3)
-              monsterSpawnEntry.Element = strArray.Length > 9 ? this.ParseNullableInt(strArray[9]) : new int?();
-          }
-          else
-            monsterSpawnEntry.Direction = this.ParseNullableInt(strArray[5]).GetValueOrDefault();
-          spot.Spawns.Add(monsterSpawnEntry);
-        }
-      }
-    }
-    MonsterSpawnDocument monsterSpawnDocument = new MonsterSpawnDocument();
-    monsterSpawnDocument.Maps = dictionary.Values.OrderBy<MonsterMap, int>((Func<MonsterMap, int>) (m => m.Number)).ToList<MonsterMap>();
-    foreach (MonsterMap map in monsterSpawnDocument.Maps)
-      map.Spots = map.Spots.OrderBy<MonsterSpot, int>((Func<MonsterSpot, int>) (s => s.Type)).ToList<MonsterSpot>();
-    return monsterSpawnDocument;
-  }
-
-  private MonsterMap GetOrCreateMap(Dictionary<int, MonsterMap> maps, int mapNumber)
-  {
-    MonsterMap monsterMap;
-    if (!maps.TryGetValue(mapNumber, out monsterMap))
-    {
-      monsterMap = new MonsterMap();
-      monsterMap.Number = mapNumber;
-      monsterMap.Name = this.ResolveMapName(mapNumber, this.GetSpawnMapName(mapNumber));
-      if (monsterMap.Spots == null)
-        monsterMap.Spots = new List<MonsterSpot>();
-      maps.Add(mapNumber, monsterMap);
-    }
-    else if (monsterMap.Spots == null)
-      monsterMap.Spots = new List<MonsterSpot>();
-    return monsterMap;
-  }
-
-  private MonsterSpot GetOrCreateSpot(MonsterMap map, int type)
-  {
-    if (map.Spots == null)
-      map.Spots = new List<MonsterSpot>();
-    MonsterSpot monsterSpot = map.Spots.FirstOrDefault<MonsterSpot>((Func<MonsterSpot, bool>) (s => s.Type == type));
-    if (monsterSpot == null)
-    {
-      monsterSpot = new MonsterSpot();
-      monsterSpot.Type = type;
-      monsterSpot.Description = this.ResolveSpotDescription(map.Number, type);
-      map.Spots.Add(monsterSpot);
-    }
-    return monsterSpot;
-  }
-
-  private string ResolveSpotDescription(int mapNumber, int type)
-  {
-    string str;
-    if (this.spotDescriptions.TryGetValue(this.GetSpotDescriptionKey(mapNumber, type), out str) && !string.IsNullOrEmpty(str))
-      return str;
-    return GetSpotDescription(type);
-  }
-
-  private string GetSpawnMapName(int mapNumber)
-  {
-    string str;
-    if (this.spawnMapNames.TryGetValue(mapNumber, out str) && !string.IsNullOrEmpty(str))
-      return str;
-    return string.Empty;
-  }
-
-  private string GetSpotDescriptionKey(int mapNumber, int type)
-  {
-    return mapNumber.ToString((IFormatProvider) CultureInfo.InvariantCulture) + ":" + type.ToString((IFormatProvider) CultureInfo.InvariantCulture);
-  }
-
-  private void AddSpotHeader(string mapName, int type, string description)
-  {
-    string str = string.IsNullOrEmpty(description) ? GetSpotDescription(type) : description;
-    this.ListBox1.Items.Add((object) SectionSeparator);
-    this.ListBox1.Items.Add((object) ("//\t" + mapName + " " + str));
-    this.ListBox1.Items.Add((object) SectionSeparator);
-    this.ListBox1.Items.Add((object) GetSpotHeader(type));
-    this.ListBox1.Items.Add((object) type.ToString((IFormatProvider) CultureInfo.InvariantCulture));
-  }
-
-  private static string GetSpotDescription(int type)
-  {
-    switch (type)
-    {
-      case 0:
-        return "Guards / NPC / Traps";
-      case 1:
-        return "Spots";
-      case 2:
-        return "Monster";
-      case 3:
-        return "Golden Monster";
-      case 4:
-        return "Blood Castle Monsters / Gate";
-      default:
-        return "Spot";
-    }
-  }
-
-  private static string GetSpotHeader(int type)
-  {
-    if (type == 1)
-      return "//Mob\tMap\tRadio\tCordX\tCordY\tCordX2\tCordY2\tDir \tQuant  Name";
-    if (type == 3)
-      return "//Mob\tMap\tRadio\tCordX\tCordY\tCordX2\tCordY2\tDir \tQuant\tElement\tName";
-    return "//Mob\tMap\tRad\tX\tY\tStr\tName";
-  }
-
-  private string FormatSpawnLine(MonsterMap map, MonsterSpot spot, MonsterSpawnEntry spawn)
-  {
-    string monsterName = this.GetMonsterName(spawn.Index);
-    if (spot.Type == 1 || spot.Type == 3)
-    {
-      int num1 = spawn.EndX.HasValue ? spawn.EndX.Value : spawn.StartX;
-      int num2 = spawn.EndY.HasValue ? spawn.EndY.Value : spawn.StartY;
-      int num3 = spawn.Count.HasValue ? spawn.Count.Value : 0;
-      if (spot.Type == 3)
-      {
-        string element = spawn.Element.HasValue ? spawn.Element.Value.ToString((IFormatProvider) CultureInfo.InvariantCulture) : string.Empty;
-        return string.Format((IFormatProvider) CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t// {10}", (object) spawn.Index, (object) map.Number, (object) spawn.Distance, (object) spawn.StartX, (object) spawn.StartY, (object) num1, (object) num2, (object) spawn.Direction, (object) num3, (object) element, (object) monsterName);
-      }
-      return string.Format((IFormatProvider) CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t// {9}", (object) spawn.Index, (object) map.Number, (object) spawn.Distance, (object) spawn.StartX, (object) spawn.StartY, (object) num1, (object) num2, (object) spawn.Direction, (object) num3, (object) monsterName);
-    }
-    return string.Format((IFormatProvider) CultureInfo.InvariantCulture, "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t// {6}", (object) spawn.Index, (object) map.Number, (object) spawn.Distance, (object) spawn.StartX, (object) spawn.StartY, (object) spawn.Direction, (object) monsterName);
-  }
-
-  private static string ParseSpotCommentDescription(string line)
-  {
-    if (string.IsNullOrEmpty(line))
-      return (string) null;
-    string str = line.Substring(3).Trim();
-    if (str.Length == 0)
-      return string.Empty;
-    int num = str.IndexOf(' ');
-    if (num < 0)
-      return string.Empty;
-    return str.Substring(num + 1).Trim();
-  }
-
-  private string GetMonsterName(int index)
-  {
-    string str;
-    if (this.monsterNames.TryGetValue(index, out str))
-      return str;
-    return "Monster " + index.ToString((IFormatProvider) CultureInfo.InvariantCulture);
-  }
-
-  private string ResolveMapName(int mapNumber, string fallbackName)
-  {
-    string str;
-    if (this.mapNames.TryGetValue(mapNumber, out str))
-      return str;
-    string spawnMapName = this.GetSpawnMapName(mapNumber);
-    if (!string.IsNullOrEmpty(spawnMapName))
-      return spawnMapName;
-    if (!string.IsNullOrEmpty(fallbackName))
-      return fallbackName;
-    return mapNumber.ToString((IFormatProvider) CultureInfo.InvariantCulture);
-  }
-
-  private static string StripComment(string value)
-  {
-    if (value == null)
-      return string.Empty;
-    int length = value.IndexOf("//", StringComparison.Ordinal);
-    if (length >= 0)
-      value = value.Substring(0, length);
-    return value.Trim();
-  }
-
-  private int? ParseNullableInt(string value)
-  {
-    string s = StripComment(value);
-    if (s.Length == 0)
-      return new int?();
-    int result;
-    return int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out result) ? new int?(result) : new int?();
-  }
-
-  private void LoadMapList()
-  {
-    this.ComboBox1.Items.Clear();
-    this.mapNames.Clear();
-    string path = Path.Combine(this.CurrDir, "Maps.txt");
-    using (StreamReader streamReader = new StreamReader(path))
-    {
-      while (!streamReader.EndOfStream)
-      {
-        string str = streamReader.ReadLine();
-        if (!string.IsNullOrEmpty(str))
-        {
-          this.ComboBox1.Items.Add((object) str);
-          string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-          int result;
-          if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
-            this.mapNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
-        }
-      }
-    }
-  }
-
-  private bool TryLoadMonsterListFromXml()
-  {
-    string[] strArray = new string[2]
-    {
-      Path.Combine(this.CurrDir, "IGC_MonsterList.xml"),
-      Path.Combine(this.CurrDir, "IGC_Monster.xml")
-    };
-    foreach (string path in strArray)
-    {
-      if (File.Exists(path))
-      {
-        try
-        {
-          XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterDefinitionList));
-          using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
-          {
-            MonsterDefinitionList definitionList = (MonsterDefinitionList) xmlSerializer.Deserialize((Stream) fileStream);
-            this.ApplyMonsterDefinitions(definitionList);
-            return true;
-          }
-        }
-        catch (InvalidOperationException)
-        {
-        }
-      }
-    }
-    return false;
-  }
-
-  private void LoadMonsterListFromText()
-  {
-    string path = Path.Combine(this.CurrDir, "Monster.txt");
-    this.ListBox2.Items.Clear();
-    this.monsterNames.Clear();
-    using (StreamReader streamReader = new StreamReader(path))
-    {
-      while (!streamReader.EndOfStream)
-      {
-        string str = streamReader.ReadLine();
-        if (!string.IsNullOrEmpty(str))
-        {
-          this.ListBox2.Items.Add((object) str);
-          string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-          int result;
-          if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
-            this.monsterNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
-        }
-      }
-    }
-  }
-
-  private void ApplyMonsterDefinitions(MonsterDefinitionList definitions)
+  private void ApplyMonsterDefinitionsToList(MonsterDefinitionList definitions)
   {
     this.ListBox2.Items.Clear();
     this.monsterNames.Clear();
