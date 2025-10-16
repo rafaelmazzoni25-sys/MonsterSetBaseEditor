@@ -33,7 +33,7 @@ internal sealed class MySettings : ApplicationSettingsBase
 
   [DebuggerNonUserCode]
   [EditorBrowsable(EditorBrowsableState.Advanced)]
-  private static void AutoSaveSettings(object sender, ShutdownEventArgs e)
+  private static void AutoSaveSettings(object sender, EventArgs e)
   {
     if (!MyProject.Application.SaveMySettingsOnExit)
       return;
@@ -53,7 +53,7 @@ internal sealed class MySettings : ApplicationSettingsBase
         {
           if (!MySettings.addedHandler)
           {
-            MyProject.Application.Shutdown += new ShutdownEventHandler(MySettings.AutoSaveSettings);
+            System.Windows.Forms.Application.ApplicationExit += new EventHandler(MySettings.AutoSaveSettings);
             MySettings.addedHandler = true;
           }
         }
