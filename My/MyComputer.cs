@@ -9,7 +9,6 @@ using System.CodeDom.Compiler;
 using System.ComponentModel;
 using System.Diagnostics;
 
-#nullable disable
 namespace MonasterSetBase.My;
 
 [EditorBrowsable(EditorBrowsableState.Never)]

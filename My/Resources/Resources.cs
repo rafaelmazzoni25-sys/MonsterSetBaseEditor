@@ -13,7 +13,6 @@ using System.Globalization;
 using System.Resources;
 using System.Runtime.CompilerServices;
 
-#nullable disable
 namespace MonasterSetBase.My.Resources;
 
 [CompilerGenerated]
