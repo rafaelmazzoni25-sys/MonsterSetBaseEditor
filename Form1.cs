@@ -155,6 +155,7 @@ public class Form1 : Form
   private readonly Dictionary<int, string> monsterNames = new Dictionary<int, string>();
   private readonly Dictionary<string, string> spotDescriptions = new Dictionary<string, string>();
   private readonly Dictionary<int, string> spawnMapNames = new Dictionary<int, string>();
+  private readonly List<string> spawnXmlHeaderComments = new List<string>();
   private static readonly string[] KnownMapAttributes = new string[2]{ "Number", "Name" };
   private static readonly string[] KnownSpotAttributes = new string[2]{ "Type", "Description" };
   private static readonly string[] KnownSpawnAttributes = new string[9]
@@ -169,12 +170,94 @@ public class Form1 : Form
     "Count",
     "Element"
   };
+  private static readonly string DefaultSpawnHeaderComment = @"  
+// ============================================================
+// == INTERNATIONAL GAMING CENTER NETWORK
+// == www.igc-network.com
+// == (C) 2010-2015 IGC-Network (R)
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// == File is a part of IGCN Group MuOnline Server files.
+// ============================================================
+//
+// ### MonsterSpawn::Map ###
+//Number: Number of map to spawn the monster on, refer to IGC_MapList.xml
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~ Same map index can be defined only one in file
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//Name: Name of a map, used for in-file description and logging purpose
+//
+// ### MonsterSpawn::Map::Spot ###
+//Type: Type of spot:
+//~ 0: NPC/Traps
+//~ 1: Multiple Monsters Spawn
+//~ 2: Single Monster Spawn
+//~ 3: Elemental Monster Spawn
+//Description: Spot description, used for in-file description and logging purpose
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//~~ Spot attributes description
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//Index: Index of monster or NPC to spawn, refer to IGC_MonsterList.xml ~ (Spot Type: 0-3)
+//Distance: Distance to spawn the monsters/NPC from original location ~ (Spot Type: 0-3)
+//StartX: StartX Coordinate of monster spawn ~ (Spot Type: 0-3)
+//StartY: StartY Coordinate of monster spawn ~ (Spot Type: 1, 3)
+//EndX: End X Coordinate of monster spawn ~ (Spot Type: 0-3)
+//EndY: End Y Coordinate of monster spawn ~ (Spot Type: 1, 3)
+//Dir: Direction the monster/NPC looks at after spawn ~ (Spot Type: 0-3)
+//~ 0: Central
+//~ 1: South-West
+//~ 2: South
+//~ 3: South-East
+//~ 4: East
+//~ 5: North-East
+//~ 6: North
+//~ 7: North-West
+//~ 8: West
+//~ -1: Random
+//Count:  Count of monsters to spawn ~ (Spot Type: 1, 3)
+//Element:  Element type to spawn the monster with ~ (Spot Type: 3)
+//~ 0: No Elemental attribute
+//~ 1: Fire
+//~ 2: Water
+//~ 3: Earth
+//~ 4: Wind
+//~ 5: Darkness
+//~ 6: Random
+//
+//~~ IMPORTANT EXCLUSIONS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//Map Number: 5 (Exile) - does not exist by default in newer game versions
+//Map Number: 9, 32 for Devil Square (1-4 and 5-7) Event are managed from: IGC_DevilSquare_Classic_Monsters.xml file
+//Map Number: 11, 12, 13, 14, 15, 16, 17, 52 for Blood Castle Event (1-8) are managed from: IGC_BloodCastle_Monster.xml file
+//Map Number: 18, 19, 20, 21, 22, 23, 53 for Chaos Castle Event (1-7) are managed from: IGC_ChaosCastle_Monster.xml file
+//Map Number: 45, 46, 47, 48, 49, 50 for Illusion Temple Renewal Event (1-6) are managed from: IGC_IllusionTemple_Renewal_NPC.xml file
+//Map Number: 58 for Raklion Hatcher Event is managed from: IGC_RaklionHatchery_Monsters.xml
+//Map Number: 65 (Snow), 66 (Volcan), 67 (Sea), 68 (Crystals) for Doppel Ganger Event are managed from: IGC_DoppelGanger_PositionInfo.xml file
+//Map Number: 69, 70, 71 for Imperial Guardian Event are managed from: IGC_ImperialGuardian_Monster_Spawn.xml file
+//Map Number: 96 for Arca Battle (Debenter) Event are managed from: IGC_ArcaBattle.xml file
+//Map Number: 97 for Chaos Castle Survival is managed from: IGC_ChaosCastle_Survival_Monster.xml file
+//Map Number: 98, 99 for Illusion Temple  League (disabled) Event are managed from: IGC_IllusionTemple_League_NPC.xml file
+//Map Number: 101 (Uruk Mountain) is event map, do not add monsters directly on it. Number of regular Uruk Mountain map to add monsters from this file is 100
+//Map Number: 102 (Tormented Square) Event is managed from: IGC_TormentedSquare_Monsters.xml file
+//Mining Areas are managed from: IGC_MiningSystem.xml file
+//Golden Monsters (index: 53-54, 79-83, 493-502) spawn is controlled from: IGC_GoldenInvasion.xml file
+//Dragon Event (index: 44) spawn is controlled from IGC_DragonEvent.xml
+//Attack Event (index: 53-56) spawn is controlled from IGC_AttackEvent.xml
+//Shop NPC spawn is managed from IGC_ShopList.xml file
+//Last Man Standing Event NPC spawn is managed from IGC_LastManStanding.xml
+//Additional event spawn can be managed from: IGC_MonsterSpawn_Event.xml file
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// STRICTLY NO COMMENTS INSIDE TAGS
+ ";
+  private const string SpawnSpacerComment = "  ";
 
   public Form1()
   {
     this.Load += new EventHandler(this.Form1_Load);
     this.CurrDir = Environment.CurrentDirectory;
     this.InitializeComponent();
+    this.ResetSpawnHeaderComments();
   }
 
   [DebuggerNonUserCode]
@@ -1828,6 +1911,7 @@ public class Form1 : Form
   {
     this.spotDescriptions.Clear();
     this.spawnMapNames.Clear();
+    this.ResetSpawnHeaderComments();
     int num = 0;
     using (StreamReader streamReader = new StreamReader(filePath))
     {
@@ -1845,11 +1929,14 @@ public class Form1 : Form
   {
     this.spotDescriptions.Clear();
     this.spawnMapNames.Clear();
+    this.spawnXmlHeaderComments.Clear();
     EditorLogger.LogInfo("Loading spawn XML file '" + filePath + "'.");
     int skippedMaps;
     int skippedSpots;
     int skippedSpawns;
-    MonsterSpawnDocument monsterSpawnDocument = this.ParseSpawnXmlDocument(filePath, out skippedMaps, out skippedSpots, out skippedSpawns);
+    XmlDocument xmlDocument;
+    MonsterSpawnDocument monsterSpawnDocument = this.ParseSpawnXmlDocument(filePath, out skippedMaps, out skippedSpots, out skippedSpawns, out xmlDocument);
+    this.CaptureSpawnXmlHeaderComments(xmlDocument);
     if (monsterSpawnDocument == null || monsterSpawnDocument.Maps == null)
     {
       EditorLogger.LogWarning("Spawn XML file '" + filePath + "' contains no maps.");
@@ -1895,20 +1982,48 @@ public class Form1 : Form
       EditorLogger.LogWarning("While loading '" + filePath + "' skipped " + Conversions.ToString(skippedMaps) + " map(s), " + Conversions.ToString(skippedSpots) + " spot(s) and " + Conversions.ToString(skippedSpawns) + " spawn row(s) due to invalid or incomplete data.");
   }
 
-  private MonsterSpawnDocument ParseSpawnXmlDocument(string filePath, out int skippedMaps, out int skippedSpots, out int skippedSpawns)
+  private void ResetSpawnHeaderComments()
+  {
+    this.spawnXmlHeaderComments.Clear();
+    this.spawnXmlHeaderComments.Add(DefaultSpawnHeaderComment);
+  }
+
+  private void CaptureSpawnXmlHeaderComments(XmlDocument xmlDocument)
+  {
+    this.spawnXmlHeaderComments.Clear();
+    if (xmlDocument != null)
+    {
+      foreach (XmlNode childNode in xmlDocument.ChildNodes)
+      {
+        if (childNode == null)
+          continue;
+        if (childNode.NodeType == XmlNodeType.Comment)
+        {
+          this.spawnXmlHeaderComments.Add(childNode.Value ?? string.Empty);
+        }
+        else if (childNode.NodeType == XmlNodeType.Element)
+          break;
+      }
+    }
+    if (this.spawnXmlHeaderComments.Count == 0)
+      this.spawnXmlHeaderComments.Add(DefaultSpawnHeaderComment);
+  }
+
+  private MonsterSpawnDocument ParseSpawnXmlDocument(string filePath, out int skippedMaps, out int skippedSpots, out int skippedSpawns, out XmlDocument originalDocument)
   {
     skippedMaps = 0;
     skippedSpots = 0;
     skippedSpawns = 0;
     XmlDocument xmlDocument = new XmlDocument();
     XmlReaderSettings settings = new XmlReaderSettings();
-    settings.IgnoreComments = true;
+    settings.IgnoreComments = false;
     settings.IgnoreWhitespace = true;
     using (FileStream input = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
     {
       using (XmlReader reader = XmlReader.Create((Stream) input, settings))
         xmlDocument.Load(reader);
     }
+    originalDocument = xmlDocument;
     XmlElement documentElement = xmlDocument.DocumentElement;
     if (documentElement == null || !string.Equals(documentElement.Name, "MonsterSpawn", StringComparison.Ordinal))
     {
@@ -2087,7 +2202,7 @@ public class Form1 : Form
   private void SaveSpawnXmlFile(string filePath)
   {
     MonsterSpawnDocument monsterSpawnDocument = this.BuildSpawnDocument();
-    XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterSpawnDocument));
+    XmlDocument xmlDocument = this.CreateSpawnXmlDocument(monsterSpawnDocument);
     XmlWriterSettings settings = new XmlWriterSettings();
     settings.Indent = true;
     settings.IndentChars = "  ";
@@ -2098,13 +2213,96 @@ public class Form1 : Form
       using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
       {
         using (XmlWriter xmlWriter = XmlWriter.Create((Stream) fileStream, settings))
-          xmlSerializer.Serialize(xmlWriter, (object) monsterSpawnDocument);
+          xmlDocument.Save(xmlWriter);
       }
     }
     catch (Exception ex)
     {
       EditorLogger.LogError("Failed to save XML spawn file '" + filePath + "'.", ex);
       throw;
+    }
+  }
+
+  private XmlDocument CreateSpawnXmlDocument(MonsterSpawnDocument document)
+  {
+    XmlDocument xmlDocument = new XmlDocument();
+    xmlDocument.PreserveWhitespace = false;
+    XmlDeclaration xmlDeclaration = xmlDocument.CreateXmlDeclaration("1.0", "utf-8", (string) null);
+    xmlDocument.AppendChild((XmlNode) xmlDeclaration);
+    if (this.spawnXmlHeaderComments.Count == 0)
+      this.spawnXmlHeaderComments.Add(DefaultSpawnHeaderComment);
+    foreach (string spawnXmlHeaderComment in this.spawnXmlHeaderComments)
+    {
+      if (spawnXmlHeaderComment != null)
+        xmlDocument.AppendChild((XmlNode) xmlDocument.CreateComment(spawnXmlHeaderComment));
+    }
+    XmlElement root = xmlDocument.CreateElement("MonsterSpawn");
+    xmlDocument.AppendChild((XmlNode) root);
+    if (document != null && document.Maps != null)
+    {
+      foreach (MonsterMap map in document.Maps)
+      {
+        XmlElement mapElement = xmlDocument.CreateElement("Map");
+        mapElement.SetAttribute("Number", map.Number.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+        if (!string.IsNullOrEmpty(map.Name))
+          mapElement.SetAttribute("Name", map.Name);
+        ApplyExtraAttributes(mapElement, map.ExtraAttributes);
+        if (map.Spots != null)
+        {
+          foreach (MonsterSpot spot in map.Spots)
+          {
+            XmlElement spotElement = xmlDocument.CreateElement("Spot");
+            spotElement.SetAttribute("Type", spot.Type.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+            if (!string.IsNullOrEmpty(spot.Description))
+              spotElement.SetAttribute("Description", spot.Description);
+            ApplyExtraAttributes(spotElement, spot.ExtraAttributes);
+            if (spot.Spawns != null && spot.Spawns.Count > 0)
+            {
+              foreach (MonsterSpawnEntry spawn in spot.Spawns)
+              {
+                XmlElement spawnElement = this.CreateSpawnElement(xmlDocument, spawn);
+                spotElement.AppendChild((XmlNode) spawnElement);
+                if (!string.IsNullOrEmpty(SpawnSpacerComment))
+                  spotElement.AppendChild((XmlNode) xmlDocument.CreateComment(SpawnSpacerComment));
+              }
+            }
+            mapElement.AppendChild((XmlNode) spotElement);
+          }
+        }
+        root.AppendChild((XmlNode) mapElement);
+      }
+    }
+    return xmlDocument;
+  }
+
+  private XmlElement CreateSpawnElement(XmlDocument xmlDocument, MonsterSpawnEntry spawn)
+  {
+    XmlElement element = xmlDocument.CreateElement("Spawn");
+    element.SetAttribute("Index", spawn.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    element.SetAttribute("Distance", spawn.Distance.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    element.SetAttribute("StartX", spawn.StartX.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    element.SetAttribute("StartY", spawn.StartY.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    element.SetAttribute("Dir", spawn.Direction.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    if (spawn.EndX.HasValue)
+      element.SetAttribute("EndX", spawn.EndX.Value.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    if (spawn.EndY.HasValue)
+      element.SetAttribute("EndY", spawn.EndY.Value.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    if (spawn.Count.HasValue)
+      element.SetAttribute("Count", spawn.Count.Value.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    if (spawn.Element.HasValue)
+      element.SetAttribute("Element", spawn.Element.Value.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    ApplyExtraAttributes(element, spawn.ExtraAttributes);
+    return element;
+  }
+
+  private static void ApplyExtraAttributes(XmlElement element, Dictionary<string, string> extraAttributes)
+  {
+    if (element == null || extraAttributes == null || extraAttributes.Count == 0)
+      return;
+    foreach (KeyValuePair<string, string> extraAttribute in extraAttributes)
+    {
+      if (!string.IsNullOrEmpty(extraAttribute.Key))
+        element.SetAttribute(extraAttribute.Key, extraAttribute.Value ?? string.Empty);
     }
   }
 
