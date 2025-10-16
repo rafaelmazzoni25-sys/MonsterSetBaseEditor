@@ -18,7 +18,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace MonasterSetBase.My;
+namespace MonasterSetBase.My
+{
 
 [GeneratedCode("MyTemplate", "8.0.0.0")]
 [StandardModule]
@@ -206,4 +207,6 @@ internal sealed class MyProject
     {
     }
   }
+}
+
 }
