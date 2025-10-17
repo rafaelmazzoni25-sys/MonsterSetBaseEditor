@@ -113,6 +113,16 @@ public class Form1 : Form
   private TableLayoutPanel _MonsterFileLayoutPanel;
   [AccessedThroughProperty("MonsterActionPanel")]
   private FlowLayoutPanel _MonsterActionPanel;
+  [AccessedThroughProperty("MonsterSummaryGroupBox")]
+  private GroupBox _MonsterSummaryGroupBox;
+  [AccessedThroughProperty("MonsterManageGroupBox")]
+  private GroupBox _MonsterManageGroupBox;
+  [AccessedThroughProperty("MonsterManageFlowLayoutPanel")]
+  private FlowLayoutPanel _MonsterManageFlowLayoutPanel;
+  [AccessedThroughProperty("MonsterSearchGroupBox")]
+  private GroupBox _MonsterSearchGroupBox;
+  [AccessedThroughProperty("MonsterSearchTableLayoutPanel")]
+  private TableLayoutPanel _MonsterSearchTableLayoutPanel;
   [AccessedThroughProperty("MonsterSummaryLabel")]
   private Label _MonsterSummaryLabel;
   [AccessedThroughProperty("MonsterSearchLabel")]
@@ -399,9 +409,14 @@ public class Form1 : Form
     this.ButtonLoadMonsterTxt = new Button();
     this.ButtonSaveMonsterTxt = new Button();
     this.MonsterActionPanel = new FlowLayoutPanel();
+    this.MonsterSummaryGroupBox = new GroupBox();
     this.MonsterSummaryLabel = new Label();
+    this.MonsterManageGroupBox = new GroupBox();
+    this.MonsterManageFlowLayoutPanel = new FlowLayoutPanel();
     this.ButtonAddMonster = new Button();
     this.ButtonDeleteMonster = new Button();
+    this.MonsterSearchGroupBox = new GroupBox();
+    this.MonsterSearchTableLayoutPanel = new TableLayoutPanel();
     this.MonsterSearchLabel = new Label();
     this.MonsterSearchTextBox = new TextBox();
     this.MonsterClearSearchButton = new Button();
@@ -424,6 +439,11 @@ public class Form1 : Form
     this.MonsterTabLayoutPanel.SuspendLayout();
     this.MonsterFileLayoutPanel.SuspendLayout();
     this.MonsterActionPanel.SuspendLayout();
+    this.MonsterSummaryGroupBox.SuspendLayout();
+    this.MonsterManageGroupBox.SuspendLayout();
+    this.MonsterManageFlowLayoutPanel.SuspendLayout();
+    this.MonsterSearchGroupBox.SuspendLayout();
+    this.MonsterSearchTableLayoutPanel.SuspendLayout();
     ((ISupportInitialize) this.MonsterDataGridView).BeginInit();
     this.TabPage2.SuspendLayout();
     this.SuspendLayout();
@@ -1149,73 +1169,135 @@ public class Form1 : Form
     this.ButtonSaveMonsterTxt.TabIndex = 7;
     this.ButtonSaveMonsterTxt.Text = "Save TXT";
     this.ButtonSaveMonsterTxt.UseVisualStyleBackColor = true;
-    this.MonsterToolTip.SetToolTip((Control) this.MonsterXmlPathTextBox, "Currently loaded monster XML file.");
-    this.MonsterToolTip.SetToolTip((Control) this.MonsterTxtPathTextBox, "Currently loaded monster TXT file.");
-    this.MonsterToolTip.SetToolTip((Control) this.ButtonLoadMonsterXml, "Load monsters from an XML definition file.");
-    this.MonsterToolTip.SetToolTip((Control) this.ButtonSaveMonsterXml, "Save the current monsters to an XML file.");
-    this.MonsterToolTip.SetToolTip((Control) this.ButtonLoadMonsterTxt, "Load monsters from a TXT definition file.");
-    this.MonsterToolTip.SetToolTip((Control) this.ButtonSaveMonsterTxt, "Save the current monsters to a TXT file.");
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterXmlPathTextBox, "Arquivo XML de monstros carregado.");
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterTxtPathTextBox, "Arquivo TXT de monstros carregado.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonLoadMonsterXml, "Carregar monstros a partir de um arquivo XML.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonSaveMonsterXml, "Salvar os monstros atuais em um arquivo XML.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonLoadMonsterTxt, "Carregar monstros a partir de um arquivo TXT.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonSaveMonsterTxt, "Salvar os monstros atuais em um arquivo TXT.");
     this.MonsterActionPanel.AutoSize = true;
     this.MonsterActionPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
     this.MonsterActionPanel.BackColor = Color.FromArgb(243, 246, 249);
-    this.MonsterActionPanel.Controls.Add((Control) this.MonsterSummaryLabel);
-    this.MonsterActionPanel.Controls.Add((Control) this.ButtonAddMonster);
-    this.MonsterActionPanel.Controls.Add((Control) this.ButtonDeleteMonster);
-    this.MonsterActionPanel.Controls.Add((Control) this.MonsterSearchLabel);
-    this.MonsterActionPanel.Controls.Add((Control) this.MonsterSearchTextBox);
-    this.MonsterActionPanel.Controls.Add((Control) this.MonsterClearSearchButton);
+    this.MonsterActionPanel.Controls.Add((Control) this.MonsterSummaryGroupBox);
+    this.MonsterActionPanel.Controls.Add((Control) this.MonsterManageGroupBox);
+    this.MonsterActionPanel.Controls.Add((Control) this.MonsterSearchGroupBox);
     this.MonsterActionPanel.Dock = DockStyle.Fill;
-    this.MonsterActionPanel.FlowDirection = FlowDirection.LeftToRight;
+    this.MonsterActionPanel.FlowDirection = FlowDirection.TopDown;
     this.MonsterActionPanel.Location = new Point(3, 93);
     this.MonsterActionPanel.Margin = new Padding(3, 6, 3, 6);
     this.MonsterActionPanel.Name = "MonsterActionPanel";
-    this.MonsterActionPanel.Padding = new Padding(12, 8, 12, 8);
-    this.MonsterActionPanel.Size = new Size(916, 44);
+    this.MonsterActionPanel.Padding = new Padding(12);
+    this.MonsterActionPanel.Size = new Size(916, 284);
     this.MonsterActionPanel.TabIndex = 1;
     this.MonsterActionPanel.WrapContents = false;
+    this.MonsterSummaryGroupBox.AutoSize = true;
+    this.MonsterSummaryGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+    this.MonsterSummaryGroupBox.Controls.Add((Control) this.MonsterSummaryLabel);
+    this.MonsterSummaryGroupBox.Location = new Point(12, 12);
+    this.MonsterSummaryGroupBox.Margin = new Padding(0, 0, 0, 12);
+    this.MonsterSummaryGroupBox.Name = "MonsterSummaryGroupBox";
+    this.MonsterSummaryGroupBox.Padding = new Padding(12, 14, 12, 12);
+    this.MonsterSummaryGroupBox.Size = new Size(197, 61);
+    this.MonsterSummaryGroupBox.TabIndex = 0;
+    this.MonsterSummaryGroupBox.TabStop = false;
+    this.MonsterSummaryGroupBox.Text = "Resumo";
     this.MonsterSummaryLabel.AutoSize = true;
-    this.MonsterSummaryLabel.Font = new Font("Segoe UI", 9f, FontStyle.Bold, GraphicsUnit.Point, (byte) 0);
-    this.MonsterSummaryLabel.Margin = new Padding(0, 8, 20, 0);
+    this.MonsterSummaryLabel.Font = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point, (byte) 0);
+    this.MonsterSummaryLabel.Margin = new Padding(0);
     this.MonsterSummaryLabel.Name = "MonsterSummaryLabel";
-    this.MonsterSummaryLabel.Size = new Size(86, 15);
+    this.MonsterSummaryLabel.Size = new Size(129, 15);
     this.MonsterSummaryLabel.TabIndex = 0;
-    this.MonsterSummaryLabel.Text = "Monsters: 0";
-    this.ButtonAddMonster.Location = new Point(0, 8);
-    this.ButtonAddMonster.Margin = new Padding(0, 8, 6, 0);
+    this.MonsterSummaryLabel.Text = "Total de monstros: 0";
+    this.MonsterManageGroupBox.AutoSize = true;
+    this.MonsterManageGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+    this.MonsterManageGroupBox.Controls.Add((Control) this.MonsterManageFlowLayoutPanel);
+    this.MonsterManageGroupBox.Location = new Point(12, 85);
+    this.MonsterManageGroupBox.Margin = new Padding(0, 0, 0, 12);
+    this.MonsterManageGroupBox.Name = "MonsterManageGroupBox";
+    this.MonsterManageGroupBox.Padding = new Padding(12, 14, 12, 12);
+    this.MonsterManageGroupBox.Size = new Size(338, 83);
+    this.MonsterManageGroupBox.TabIndex = 1;
+    this.MonsterManageGroupBox.TabStop = false;
+    this.MonsterManageGroupBox.Text = "Gerenciamento";
+    this.MonsterManageFlowLayoutPanel.AutoSize = true;
+    this.MonsterManageFlowLayoutPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+    this.MonsterManageFlowLayoutPanel.Controls.Add((Control) this.ButtonAddMonster);
+    this.MonsterManageFlowLayoutPanel.Controls.Add((Control) this.ButtonDeleteMonster);
+    this.MonsterManageFlowLayoutPanel.Dock = DockStyle.Fill;
+    this.MonsterManageFlowLayoutPanel.FlowDirection = FlowDirection.LeftToRight;
+    this.MonsterManageFlowLayoutPanel.Location = new Point(12, 29);
+    this.MonsterManageFlowLayoutPanel.Margin = new Padding(0);
+    this.MonsterManageFlowLayoutPanel.Name = "MonsterManageFlowLayoutPanel";
+    this.MonsterManageFlowLayoutPanel.Size = new Size(314, 42);
+    this.MonsterManageFlowLayoutPanel.TabIndex = 0;
+    this.MonsterManageFlowLayoutPanel.WrapContents = false;
+    this.ButtonAddMonster.Location = new Point(0, 0);
+    this.ButtonAddMonster.Margin = new Padding(0, 0, 8, 0);
     this.ButtonAddMonster.Name = "ButtonAddMonster";
-    this.ButtonAddMonster.Size = new Size(114, 28);
-    this.ButtonAddMonster.TabIndex = 1;
-    this.ButtonAddMonster.Text = "Add Monster";
+    this.ButtonAddMonster.Size = new Size(150, 42);
+    this.ButtonAddMonster.TabIndex = 0;
+    this.ButtonAddMonster.Text = "Adicionar monstro";
     this.ButtonAddMonster.UseVisualStyleBackColor = true;
-    this.MonsterToolTip.SetToolTip((Control) this.ButtonAddMonster, "Insert a new monster at the bottom of the list.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonAddMonster, "Adicionar um novo monstro ao final da lista.");
     this.ButtonDeleteMonster.Enabled = false;
-    this.ButtonDeleteMonster.Location = new Point(120, 8);
-    this.ButtonDeleteMonster.Margin = new Padding(0, 8, 20, 0);
+    this.ButtonDeleteMonster.Location = new Point(158, 0);
+    this.ButtonDeleteMonster.Margin = new Padding(0);
     this.ButtonDeleteMonster.Name = "ButtonDeleteMonster";
-    this.ButtonDeleteMonster.Size = new Size(130, 28);
-    this.ButtonDeleteMonster.TabIndex = 2;
-    this.ButtonDeleteMonster.Text = "Delete Selected";
+    this.ButtonDeleteMonster.Size = new Size(156, 42);
+    this.ButtonDeleteMonster.TabIndex = 1;
+    this.ButtonDeleteMonster.Text = "Remover selecionado";
     this.ButtonDeleteMonster.UseVisualStyleBackColor = true;
-    this.MonsterToolTip.SetToolTip((Control) this.ButtonDeleteMonster, "Remove the currently selected monster.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonDeleteMonster, "Remover o monstro selecionado atualmente.");
+    this.MonsterSearchGroupBox.AutoSize = true;
+    this.MonsterSearchGroupBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+    this.MonsterSearchGroupBox.Controls.Add((Control) this.MonsterSearchTableLayoutPanel);
+    this.MonsterSearchGroupBox.Location = new Point(12, 180);
+    this.MonsterSearchGroupBox.Margin = new Padding(0);
+    this.MonsterSearchGroupBox.Name = "MonsterSearchGroupBox";
+    this.MonsterSearchGroupBox.Padding = new Padding(12, 14, 12, 12);
+    this.MonsterSearchGroupBox.Size = new Size(362, 92);
+    this.MonsterSearchGroupBox.TabIndex = 2;
+    this.MonsterSearchGroupBox.TabStop = false;
+    this.MonsterSearchGroupBox.Text = "Busca";
+    this.MonsterSearchTableLayoutPanel.AutoSize = true;
+    this.MonsterSearchTableLayoutPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+    this.MonsterSearchTableLayoutPanel.ColumnCount = 2;
+    this.MonsterSearchTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+    this.MonsterSearchTableLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+    this.MonsterSearchTableLayoutPanel.Controls.Add((Control) this.MonsterSearchLabel, 0, 0);
+    this.MonsterSearchTableLayoutPanel.Controls.Add((Control) this.MonsterSearchTextBox, 0, 1);
+    this.MonsterSearchTableLayoutPanel.Controls.Add((Control) this.MonsterClearSearchButton, 1, 1);
+    this.MonsterSearchTableLayoutPanel.Dock = DockStyle.Fill;
+    this.MonsterSearchTableLayoutPanel.Location = new Point(12, 29);
+    this.MonsterSearchTableLayoutPanel.Margin = new Padding(0);
+    this.MonsterSearchTableLayoutPanel.Name = "MonsterSearchTableLayoutPanel";
+    this.MonsterSearchTableLayoutPanel.RowCount = 2;
+    this.MonsterSearchTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+    this.MonsterSearchTableLayoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+    this.MonsterSearchTableLayoutPanel.Size = new Size(338, 51);
+    this.MonsterSearchTableLayoutPanel.TabIndex = 0;
+    this.MonsterSearchTableLayoutPanel.SetColumnSpan((Control) this.MonsterSearchLabel, 2);
     this.MonsterSearchLabel.AutoSize = true;
-    this.MonsterSearchLabel.Margin = new Padding(0, 12, 6, 0);
+    this.MonsterSearchLabel.Margin = new Padding(0, 0, 0, 6);
     this.MonsterSearchLabel.Name = "MonsterSearchLabel";
-    this.MonsterSearchLabel.Size = new Size(47, 13);
-    this.MonsterSearchLabel.TabIndex = 3;
-    this.MonsterSearchLabel.Text = "Search:";
-    this.MonsterSearchTextBox.Margin = new Padding(0, 8, 6, 0);
+    this.MonsterSearchLabel.Size = new Size(151, 13);
+    this.MonsterSearchLabel.TabIndex = 0;
+    this.MonsterSearchLabel.Text = "Filtrar por nome ou índice:";
+    this.MonsterSearchTextBox.Dock = DockStyle.Fill;
+    this.MonsterSearchTextBox.Margin = new Padding(0, 0, 6, 0);
     this.MonsterSearchTextBox.Name = "MonsterSearchTextBox";
-    this.MonsterSearchTextBox.Size = new Size(220, 20);
-    this.MonsterSearchTextBox.TabIndex = 4;
-    this.MonsterToolTip.SetToolTip((Control) this.MonsterSearchTextBox, "Filter and highlight monsters by name or index.");
-    this.MonsterClearSearchButton.Location = new Point(403, 8);
-    this.MonsterClearSearchButton.Margin = new Padding(0, 8, 0, 0);
+    this.MonsterSearchTextBox.Size = new Size(246, 20);
+    this.MonsterSearchTextBox.TabIndex = 1;
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterSearchTextBox, "Filtrar e destacar monstros por nome ou índice.");
+    this.MonsterClearSearchButton.AutoSize = true;
+    this.MonsterClearSearchButton.Location = new Point(252, 22);
+    this.MonsterClearSearchButton.Margin = new Padding(0);
     this.MonsterClearSearchButton.Name = "MonsterClearSearchButton";
-    this.MonsterClearSearchButton.Size = new Size(82, 28);
-    this.MonsterClearSearchButton.TabIndex = 5;
-    this.MonsterClearSearchButton.Text = "Clear";
+    this.MonsterClearSearchButton.Size = new Size(86, 26);
+    this.MonsterClearSearchButton.TabIndex = 2;
+    this.MonsterClearSearchButton.Text = "Limpar filtro";
     this.MonsterClearSearchButton.UseVisualStyleBackColor = true;
-    this.MonsterToolTip.SetToolTip((Control) this.MonsterClearSearchButton, "Clear the current search filter.");
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterClearSearchButton, "Limpar o filtro de busca atual.");
     this.MonsterDataGridView.AllowUserToAddRows = true;
     this.MonsterDataGridView.AllowUserToDeleteRows = true;
     this.MonsterDataGridView.AllowUserToOrderColumns = true;
@@ -1229,15 +1311,15 @@ public class Form1 : Form
       (DataGridViewColumn) this.MonsterNameColumn
     });
     this.MonsterDataGridView.Dock = DockStyle.Fill;
-    this.MonsterDataGridView.Location = new Point(3, 143);
+    this.MonsterDataGridView.Location = new Point(3, 383);
     this.MonsterDataGridView.Margin = new Padding(3, 0, 3, 3);
     this.MonsterDataGridView.MultiSelect = false;
     this.MonsterDataGridView.Name = "MonsterDataGridView";
     this.MonsterDataGridView.RowHeadersVisible = false;
     this.MonsterDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-    this.MonsterDataGridView.Size = new Size(916, 445);
+    this.MonsterDataGridView.Size = new Size(916, 199);
     this.MonsterDataGridView.TabIndex = 2;
-    this.MonsterToolTip.SetToolTip((Control) this.MonsterDataGridView, "Edit monster attributes directly in the table below.");
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterDataGridView, "Edite os atributos dos monstros diretamente na tabela abaixo.");
     this.MonsterIndexColumn.DataPropertyName = "Index";
     this.MonsterIndexColumn.FillWeight = 20f;
     this.MonsterIndexColumn.HeaderText = "Index";
@@ -1308,6 +1390,16 @@ public class Form1 : Form
     this.GroupBox4.PerformLayout();
     this.TabControl1.ResumeLayout(false);
     this.MonsterActionPanel.ResumeLayout(false);
+    this.MonsterSummaryGroupBox.ResumeLayout(false);
+    this.MonsterSummaryGroupBox.PerformLayout();
+    this.MonsterManageGroupBox.ResumeLayout(false);
+    this.MonsterManageGroupBox.PerformLayout();
+    this.MonsterManageFlowLayoutPanel.ResumeLayout(false);
+    this.MonsterManageFlowLayoutPanel.PerformLayout();
+    this.MonsterSearchGroupBox.ResumeLayout(false);
+    this.MonsterSearchGroupBox.PerformLayout();
+    this.MonsterSearchTableLayoutPanel.ResumeLayout(false);
+    this.MonsterSearchTableLayoutPanel.PerformLayout();
     this.MonsterActionPanel.PerformLayout();
     this.MonsterFileLayoutPanel.ResumeLayout(false);
     this.MonsterFileLayoutPanel.PerformLayout();
@@ -1699,10 +1791,40 @@ public class Form1 : Form
     [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterActionPanel = value;
   }
 
+  internal virtual GroupBox MonsterSummaryGroupBox
+  {
+    [DebuggerNonUserCode] get => this._MonsterSummaryGroupBox;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterSummaryGroupBox = value;
+  }
+
   internal virtual Label MonsterSummaryLabel
   {
     [DebuggerNonUserCode] get => this._MonsterSummaryLabel;
     [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterSummaryLabel = value;
+  }
+
+  internal virtual GroupBox MonsterManageGroupBox
+  {
+    [DebuggerNonUserCode] get => this._MonsterManageGroupBox;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterManageGroupBox = value;
+  }
+
+  internal virtual FlowLayoutPanel MonsterManageFlowLayoutPanel
+  {
+    [DebuggerNonUserCode] get => this._MonsterManageFlowLayoutPanel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterManageFlowLayoutPanel = value;
+  }
+
+  internal virtual GroupBox MonsterSearchGroupBox
+  {
+    [DebuggerNonUserCode] get => this._MonsterSearchGroupBox;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterSearchGroupBox = value;
+  }
+
+  internal virtual TableLayoutPanel MonsterSearchTableLayoutPanel
+  {
+    [DebuggerNonUserCode] get => this._MonsterSearchTableLayoutPanel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterSearchTableLayoutPanel = value;
   }
 
   internal virtual Label MonsterSearchLabel
@@ -3369,7 +3491,7 @@ public class Form1 : Form
     if (this.MonsterSummaryLabel == null)
       return;
     int count = this.monsterDefinitions != null ? this.monsterDefinitions.Count : 0;
-    string str = string.Format((IFormatProvider) CultureInfo.InvariantCulture, "Monsters: {0}", count.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    string str = string.Format((IFormatProvider) CultureInfo.InvariantCulture, "Total de monstros: {0}", count.ToString((IFormatProvider) CultureInfo.InvariantCulture));
     if (this.MonsterDataGridView != null && this.MonsterDataGridView.CurrentRow != null && !this.MonsterDataGridView.CurrentRow.IsNewRow)
     {
       object indexValue = (object) null;
@@ -3388,7 +3510,7 @@ public class Form1 : Form
       else if (indexValue != null)
         selectedInfo = "#" + Conversions.ToString(indexValue);
       if (!string.IsNullOrEmpty(selectedInfo))
-        str = str + " – Selected: " + selectedInfo;
+        str = str + " – Selecionado: " + selectedInfo;
     }
     this.MonsterSummaryLabel.Text = str;
   }
