@@ -80,6 +80,36 @@ public class Form1 : Form
   private TabPage _TabPage1;
   [AccessedThroughProperty("TabPage2")]
   private TabPage _TabPage2;
+  [AccessedThroughProperty("ButtonLoadMonsterXml")]
+  private Button _ButtonLoadMonsterXml;
+  [AccessedThroughProperty("ButtonLoadMonsterTxt")]
+  private Button _ButtonLoadMonsterTxt;
+  [AccessedThroughProperty("ButtonSaveMonsterXml")]
+  private Button _ButtonSaveMonsterXml;
+  [AccessedThroughProperty("ButtonSaveMonsterTxt")]
+  private Button _ButtonSaveMonsterTxt;
+  [AccessedThroughProperty("ButtonAddMonster")]
+  private Button _ButtonAddMonster;
+  [AccessedThroughProperty("ButtonDeleteMonster")]
+  private Button _ButtonDeleteMonster;
+  [AccessedThroughProperty("MonsterXmlPathTextBox")]
+  private TextBox _MonsterXmlPathTextBox;
+  [AccessedThroughProperty("MonsterTxtPathTextBox")]
+  private TextBox _MonsterTxtPathTextBox;
+  [AccessedThroughProperty("MonsterXmlPathLabel")]
+  private Label _MonsterXmlPathLabel;
+  [AccessedThroughProperty("MonsterTxtPathLabel")]
+  private Label _MonsterTxtPathLabel;
+  [AccessedThroughProperty("MonsterDataGridView")]
+  private DataGridView _MonsterDataGridView;
+  [AccessedThroughProperty("MonsterIndexColumn")]
+  private DataGridViewTextBoxColumn _MonsterIndexColumn;
+  [AccessedThroughProperty("MonsterNameColumn")]
+  private DataGridViewTextBoxColumn _MonsterNameColumn;
+  [AccessedThroughProperty("OpenMonsterFileDialog")]
+  private OpenFileDialog _OpenMonsterFileDialog;
+  [AccessedThroughProperty("SaveMonsterFileDialog")]
+  private SaveFileDialog _SaveMonsterFileDialog;
   [AccessedThroughProperty("Label3")]
   private Label _Label3;
   [AccessedThroughProperty("Label1")]
@@ -157,6 +187,10 @@ public class Form1 : Form
   private readonly Dictionary<string, string> spotDescriptions = new Dictionary<string, string>();
   private readonly Dictionary<int, string> spawnMapNames = new Dictionary<int, string>();
   private readonly List<string> spawnXmlHeaderComments = new List<string>();
+  private readonly BindingList<MonsterDefinition> monsterDefinitions = new BindingList<MonsterDefinition>();
+  private bool isLoadingMonsterDefinitions;
+  private string currentMonsterXmlPath;
+  private string currentMonsterTextPath;
   private static readonly string[] KnownMapAttributes = new string[2]{ "Number", "Name" };
   private static readonly string[] KnownSpotAttributes = new string[2]{ "Type", "Description" };
   private static readonly string[] KnownSpawnAttributes = new string[9]
@@ -257,8 +291,12 @@ public class Form1 : Form
   {
     this.Load += new EventHandler(this.Form1_Load);
     this.CurrDir = Environment.CurrentDirectory;
+    this.currentMonsterXmlPath = Path.Combine(this.CurrDir, "IGC_MonsterList.xml");
+    this.currentMonsterTextPath = Path.Combine(this.CurrDir, "Monster.txt");
     this.InitializeComponent();
+    this.InitializeMonsterEditor();
     this.ResetSpawnHeaderComments();
+    this.UpdateMonsterFileStatus();
   }
 
   [DebuggerNonUserCode]
@@ -333,6 +371,21 @@ public class Form1 : Form
     this.Label7 = new Label();
     this.Button2 = new Button();
     this.TabPage2 = new TabPage();
+    this.MonsterXmlPathLabel = new Label();
+    this.MonsterXmlPathTextBox = new TextBox();
+    this.ButtonLoadMonsterXml = new Button();
+    this.ButtonSaveMonsterXml = new Button();
+    this.MonsterTxtPathLabel = new Label();
+    this.MonsterTxtPathTextBox = new TextBox();
+    this.ButtonLoadMonsterTxt = new Button();
+    this.ButtonSaveMonsterTxt = new Button();
+    this.ButtonAddMonster = new Button();
+    this.ButtonDeleteMonster = new Button();
+    this.MonsterDataGridView = new DataGridView();
+    this.MonsterIndexColumn = new DataGridViewTextBoxColumn();
+    this.MonsterNameColumn = new DataGridViewTextBoxColumn();
+    this.OpenMonsterFileDialog = new OpenFileDialog();
+    this.SaveMonsterFileDialog = new SaveFileDialog();
     this.Timer1 = new Timer(this.components);
     this.StatusStrip1.SuspendLayout();
     this.GroupBox1.SuspendLayout();
@@ -343,6 +396,8 @@ public class Form1 : Form
     this.TabControl1.SuspendLayout();
     this.TabPage1.SuspendLayout();
     this.GroupBox5.SuspendLayout();
+    ((ISupportInitialize) this.MonsterDataGridView).BeginInit();
+    this.TabPage2.SuspendLayout();
     this.SuspendLayout();
     this.StatusStrip1.Items.AddRange(new ToolStripItem[1]
     {
@@ -985,6 +1040,112 @@ public class Form1 : Form
     this.Button2.TabIndex = 5;
     this.Button2.Text = "Load Mob";
     this.Button2.UseVisualStyleBackColor = true;
+    this.TabPage2.Controls.Add((Control) this.MonsterDataGridView);
+    this.TabPage2.Controls.Add((Control) this.ButtonDeleteMonster);
+    this.TabPage2.Controls.Add((Control) this.ButtonAddMonster);
+    this.TabPage2.Controls.Add((Control) this.ButtonSaveMonsterTxt);
+    this.TabPage2.Controls.Add((Control) this.ButtonLoadMonsterTxt);
+    this.TabPage2.Controls.Add((Control) this.MonsterTxtPathTextBox);
+    this.TabPage2.Controls.Add((Control) this.MonsterTxtPathLabel);
+    this.TabPage2.Controls.Add((Control) this.ButtonSaveMonsterXml);
+    this.TabPage2.Controls.Add((Control) this.ButtonLoadMonsterXml);
+    this.TabPage2.Controls.Add((Control) this.MonsterXmlPathTextBox);
+    this.TabPage2.Controls.Add((Control) this.MonsterXmlPathLabel);
+    this.MonsterXmlPathLabel.AutoSize = true;
+    this.MonsterXmlPathLabel.Location = new Point(6, 6);
+    this.MonsterXmlPathLabel.Name = "MonsterXmlPathLabel";
+    this.MonsterXmlPathLabel.Size = new Size(117, 13);
+    this.MonsterXmlPathLabel.TabIndex = 0;
+    this.MonsterXmlPathLabel.Text = "IGC_MonsterList.xml:";
+    this.MonsterXmlPathTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+    this.MonsterXmlPathTextBox.Location = new Point(9, 22);
+    this.MonsterXmlPathTextBox.Name = "MonsterXmlPathTextBox";
+    this.MonsterXmlPathTextBox.ReadOnly = true;
+    this.MonsterXmlPathTextBox.Size = new Size(658, 20);
+    this.MonsterXmlPathTextBox.TabIndex = 1;
+    this.ButtonLoadMonsterXml.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+    this.ButtonLoadMonsterXml.Location = new Point(673, 20);
+    this.ButtonLoadMonsterXml.Name = "ButtonLoadMonsterXml";
+    this.ButtonLoadMonsterXml.Size = new Size(120, 23);
+    this.ButtonLoadMonsterXml.TabIndex = 2;
+    this.ButtonLoadMonsterXml.Text = "Load XML";
+    this.ButtonLoadMonsterXml.UseVisualStyleBackColor = true;
+    this.ButtonSaveMonsterXml.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+    this.ButtonSaveMonsterXml.Location = new Point(799, 20);
+    this.ButtonSaveMonsterXml.Name = "ButtonSaveMonsterXml";
+    this.ButtonSaveMonsterXml.Size = new Size(120, 23);
+    this.ButtonSaveMonsterXml.TabIndex = 3;
+    this.ButtonSaveMonsterXml.Text = "Save XML";
+    this.ButtonSaveMonsterXml.UseVisualStyleBackColor = true;
+    this.MonsterTxtPathLabel.AutoSize = true;
+    this.MonsterTxtPathLabel.Location = new Point(6, 54);
+    this.MonsterTxtPathLabel.Name = "MonsterTxtPathLabel";
+    this.MonsterTxtPathLabel.Size = new Size(68, 13);
+    this.MonsterTxtPathLabel.TabIndex = 4;
+    this.MonsterTxtPathLabel.Text = "Monster.txt:";
+    this.MonsterTxtPathTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+    this.MonsterTxtPathTextBox.Location = new Point(9, 70);
+    this.MonsterTxtPathTextBox.Name = "MonsterTxtPathTextBox";
+    this.MonsterTxtPathTextBox.ReadOnly = true;
+    this.MonsterTxtPathTextBox.Size = new Size(658, 20);
+    this.MonsterTxtPathTextBox.TabIndex = 5;
+    this.ButtonLoadMonsterTxt.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+    this.ButtonLoadMonsterTxt.Location = new Point(673, 68);
+    this.ButtonLoadMonsterTxt.Name = "ButtonLoadMonsterTxt";
+    this.ButtonLoadMonsterTxt.Size = new Size(120, 23);
+    this.ButtonLoadMonsterTxt.TabIndex = 6;
+    this.ButtonLoadMonsterTxt.Text = "Load TXT";
+    this.ButtonLoadMonsterTxt.UseVisualStyleBackColor = true;
+    this.ButtonSaveMonsterTxt.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+    this.ButtonSaveMonsterTxt.Location = new Point(799, 68);
+    this.ButtonSaveMonsterTxt.Name = "ButtonSaveMonsterTxt";
+    this.ButtonSaveMonsterTxt.Size = new Size(120, 23);
+    this.ButtonSaveMonsterTxt.TabIndex = 7;
+    this.ButtonSaveMonsterTxt.Text = "Save TXT";
+    this.ButtonSaveMonsterTxt.UseVisualStyleBackColor = true;
+    this.ButtonAddMonster.Location = new Point(9, 106);
+    this.ButtonAddMonster.Name = "ButtonAddMonster";
+    this.ButtonAddMonster.Size = new Size(120, 23);
+    this.ButtonAddMonster.TabIndex = 8;
+    this.ButtonAddMonster.Text = "Add Monster";
+    this.ButtonAddMonster.UseVisualStyleBackColor = true;
+    this.ButtonDeleteMonster.Enabled = false;
+    this.ButtonDeleteMonster.Location = new Point(135, 106);
+    this.ButtonDeleteMonster.Name = "ButtonDeleteMonster";
+    this.ButtonDeleteMonster.Size = new Size(120, 23);
+    this.ButtonDeleteMonster.TabIndex = 9;
+    this.ButtonDeleteMonster.Text = "Delete Selected";
+    this.ButtonDeleteMonster.UseVisualStyleBackColor = true;
+    this.MonsterDataGridView.AllowUserToAddRows = true;
+    this.MonsterDataGridView.AllowUserToDeleteRows = true;
+    this.MonsterDataGridView.AllowUserToResizeRows = false;
+    this.MonsterDataGridView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+    this.MonsterDataGridView.AutoGenerateColumns = false;
+    this.MonsterDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+    this.MonsterDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+    this.MonsterDataGridView.Columns.AddRange(new DataGridViewColumn[2]
+    {
+      (DataGridViewColumn) this.MonsterIndexColumn,
+      (DataGridViewColumn) this.MonsterNameColumn
+    });
+    this.MonsterDataGridView.Location = new Point(9, 135);
+    this.MonsterDataGridView.MultiSelect = false;
+    this.MonsterDataGridView.Name = "MonsterDataGridView";
+    this.MonsterDataGridView.RowHeadersVisible = false;
+    this.MonsterDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+    this.MonsterDataGridView.Size = new Size(910, 450);
+    this.MonsterDataGridView.TabIndex = 10;
+    this.MonsterIndexColumn.DataPropertyName = "Index";
+    this.MonsterIndexColumn.FillWeight = 20f;
+    this.MonsterIndexColumn.HeaderText = "Index";
+    this.MonsterIndexColumn.Name = "MonsterIndexColumn";
+    this.MonsterIndexColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+    this.MonsterIndexColumn.ValueType = typeof (int);
+    this.MonsterNameColumn.DataPropertyName = "Name";
+    this.MonsterNameColumn.FillWeight = 80f;
+    this.MonsterNameColumn.HeaderText = "Name";
+    this.MonsterNameColumn.Name = "MonsterNameColumn";
+    this.MonsterNameColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
     TabPage tabPage2_1 = this.TabPage2;
     point1 = new Point(4, 22);
     Point point49 = point1;
@@ -1001,6 +1162,8 @@ public class Form1 : Form
     this.TabPage2.TabIndex = 1;
     this.TabPage2.Text = "Monster";
     this.TabPage2.UseVisualStyleBackColor = true;
+    this.OpenMonsterFileDialog.Filter = "Monster list files (*.txt;*.xml)|*.txt;*.xml|Text files (*.txt)|*.txt|XML files (*.xml)|*.xml|All files (*.*)|*.*";
+    this.SaveMonsterFileDialog.Filter = "Monster list files (*.txt;*.xml)|*.txt;*.xml|Text files (*.txt)|*.txt|XML files (*.xml)|*.xml|All files (*.*)|*.*";
     this.Timer1.Interval = 200;
     this.AutoScaleDimensions = new SizeF(6f, 13f);
     this.AutoScaleMode = AutoScaleMode.Font;
@@ -1025,7 +1188,10 @@ public class Form1 : Form
     this.GroupBox4.ResumeLayout(false);
     this.GroupBox4.PerformLayout();
     this.TabControl1.ResumeLayout(false);
+    ((ISupportInitialize) this.MonsterDataGridView).EndInit();
     this.TabPage1.ResumeLayout(false);
+    this.TabPage2.ResumeLayout(false);
+    this.TabPage2.PerformLayout();
     this.GroupBox5.ResumeLayout(false);
     this.GroupBox5.PerformLayout();
     this.ResumeLayout(false);
@@ -1305,6 +1471,170 @@ public class Form1 : Form
   {
     [DebuggerNonUserCode] get => this._TabPage2;
     [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._TabPage2 = value;
+  }
+
+  internal virtual Label MonsterXmlPathLabel
+  {
+    [DebuggerNonUserCode] get => this._MonsterXmlPathLabel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterXmlPathLabel = value;
+  }
+
+  internal virtual TextBox MonsterXmlPathTextBox
+  {
+    [DebuggerNonUserCode] get => this._MonsterXmlPathTextBox;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterXmlPathTextBox = value;
+  }
+
+  internal virtual Button ButtonLoadMonsterXml
+  {
+    [DebuggerNonUserCode] get => this._ButtonLoadMonsterXml;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      EventHandler eventHandler = new EventHandler(this.ButtonLoadMonsterXml_Click);
+      if (this._ButtonLoadMonsterXml != null)
+        this._ButtonLoadMonsterXml.Click -= eventHandler;
+      this._ButtonLoadMonsterXml = value;
+      if (this._ButtonLoadMonsterXml == null)
+        return;
+      this._ButtonLoadMonsterXml.Click += eventHandler;
+    }
+  }
+
+  internal virtual Button ButtonSaveMonsterXml
+  {
+    [DebuggerNonUserCode] get => this._ButtonSaveMonsterXml;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      EventHandler eventHandler = new EventHandler(this.ButtonSaveMonsterXml_Click);
+      if (this._ButtonSaveMonsterXml != null)
+        this._ButtonSaveMonsterXml.Click -= eventHandler;
+      this._ButtonSaveMonsterXml = value;
+      if (this._ButtonSaveMonsterXml == null)
+        return;
+      this._ButtonSaveMonsterXml.Click += eventHandler;
+    }
+  }
+
+  internal virtual Label MonsterTxtPathLabel
+  {
+    [DebuggerNonUserCode] get => this._MonsterTxtPathLabel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterTxtPathLabel = value;
+  }
+
+  internal virtual TextBox MonsterTxtPathTextBox
+  {
+    [DebuggerNonUserCode] get => this._MonsterTxtPathTextBox;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterTxtPathTextBox = value;
+  }
+
+  internal virtual Button ButtonLoadMonsterTxt
+  {
+    [DebuggerNonUserCode] get => this._ButtonLoadMonsterTxt;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      EventHandler eventHandler = new EventHandler(this.ButtonLoadMonsterTxt_Click);
+      if (this._ButtonLoadMonsterTxt != null)
+        this._ButtonLoadMonsterTxt.Click -= eventHandler;
+      this._ButtonLoadMonsterTxt = value;
+      if (this._ButtonLoadMonsterTxt == null)
+        return;
+      this._ButtonLoadMonsterTxt.Click += eventHandler;
+    }
+  }
+
+  internal virtual Button ButtonSaveMonsterTxt
+  {
+    [DebuggerNonUserCode] get => this._ButtonSaveMonsterTxt;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      EventHandler eventHandler = new EventHandler(this.ButtonSaveMonsterTxt_Click);
+      if (this._ButtonSaveMonsterTxt != null)
+        this._ButtonSaveMonsterTxt.Click -= eventHandler;
+      this._ButtonSaveMonsterTxt = value;
+      if (this._ButtonSaveMonsterTxt == null)
+        return;
+      this._ButtonSaveMonsterTxt.Click += eventHandler;
+    }
+  }
+
+  internal virtual Button ButtonAddMonster
+  {
+    [DebuggerNonUserCode] get => this._ButtonAddMonster;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      EventHandler eventHandler = new EventHandler(this.ButtonAddMonster_Click);
+      if (this._ButtonAddMonster != null)
+        this._ButtonAddMonster.Click -= eventHandler;
+      this._ButtonAddMonster = value;
+      if (this._ButtonAddMonster == null)
+        return;
+      this._ButtonAddMonster.Click += eventHandler;
+    }
+  }
+
+  internal virtual Button ButtonDeleteMonster
+  {
+    [DebuggerNonUserCode] get => this._ButtonDeleteMonster;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      EventHandler eventHandler = new EventHandler(this.ButtonDeleteMonster_Click);
+      if (this._ButtonDeleteMonster != null)
+        this._ButtonDeleteMonster.Click -= eventHandler;
+      this._ButtonDeleteMonster = value;
+      if (this._ButtonDeleteMonster == null)
+        return;
+      this._ButtonDeleteMonster.Click += eventHandler;
+    }
+  }
+
+  internal virtual DataGridView MonsterDataGridView
+  {
+    [DebuggerNonUserCode] get => this._MonsterDataGridView;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      DataGridViewCellValidatingEventHandler validatingEventHandler = new DataGridViewCellValidatingEventHandler(this.MonsterDataGridView_CellValidating);
+      DataGridViewCellEventHandler cellEndEditEventHandler = new DataGridViewCellEventHandler(this.MonsterDataGridView_CellEndEdit);
+      EventHandler selectionChangedEventHandler = new EventHandler(this.MonsterDataGridView_SelectionChanged);
+      DataGridViewDataErrorEventHandler dataErrorEventHandler = new DataGridViewDataErrorEventHandler(this.MonsterDataGridView_DataError);
+      if (this._MonsterDataGridView != null)
+      {
+        this._MonsterDataGridView.CellValidating -= validatingEventHandler;
+        this._MonsterDataGridView.CellEndEdit -= cellEndEditEventHandler;
+        this._MonsterDataGridView.SelectionChanged -= selectionChangedEventHandler;
+        this._MonsterDataGridView.DataError -= dataErrorEventHandler;
+      }
+      this._MonsterDataGridView = value;
+      if (this._MonsterDataGridView == null)
+        return;
+      this._MonsterDataGridView.CellValidating += validatingEventHandler;
+      this._MonsterDataGridView.CellEndEdit += cellEndEditEventHandler;
+      this._MonsterDataGridView.SelectionChanged += selectionChangedEventHandler;
+      this._MonsterDataGridView.DataError += dataErrorEventHandler;
+    }
+  }
+
+  internal virtual DataGridViewTextBoxColumn MonsterIndexColumn
+  {
+    [DebuggerNonUserCode] get => this._MonsterIndexColumn;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterIndexColumn = value;
+  }
+
+  internal virtual DataGridViewTextBoxColumn MonsterNameColumn
+  {
+    [DebuggerNonUserCode] get => this._MonsterNameColumn;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterNameColumn = value;
+  }
+
+  internal virtual OpenFileDialog OpenMonsterFileDialog
+  {
+    [DebuggerNonUserCode] get => this._OpenMonsterFileDialog;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._OpenMonsterFileDialog = value;
+  }
+
+  internal virtual SaveFileDialog SaveMonsterFileDialog
+  {
+    [DebuggerNonUserCode] get => this._SaveMonsterFileDialog;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._SaveMonsterFileDialog = value;
   }
 
   internal virtual Label Label3
@@ -1769,7 +2099,8 @@ public class Form1 : Form
         this.Inizio = (object) 1;
       }
       this.colore = (object) Color.Red;
-      this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "0"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.Dir), (object) "\t"), (object) "// "), this.NameMonster));
+      string spawnLine1 = BuildSpawnLine(RuntimeHelpers.GetObjectValue(this.Monster), RuntimeHelpers.GetObjectValue(this.MapNumber), (object) "0", RuntimeHelpers.GetObjectValue(this.CordX), RuntimeHelpers.GetObjectValue(this.CordY), RuntimeHelpers.GetObjectValue(this.Dir), (object) ("// " + Conversions.ToString(RuntimeHelpers.GetObjectValue(this.NameMonster))));
+      this.ListBox1.Items.Add((object) spawnLine1);
     }
     else if (Operators.ConditionalCompareObjectEqual(this.ComboBox2.SelectedItem, (object) "1 - Spots", false))
     {
@@ -1796,7 +2127,8 @@ public class Form1 : Form
         this.Inizio = (object) 1;
       }
       this.colore = (object) Color.Green;
-      this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.Dir), (object) "\t"), (object) "// "), this.NameMonster));
+      string spawnLine2 = BuildSpawnLine(RuntimeHelpers.GetObjectValue(this.Monster), RuntimeHelpers.GetObjectValue(this.MapNumber), (object) "30", RuntimeHelpers.GetObjectValue(this.CordX), RuntimeHelpers.GetObjectValue(this.CordY), RuntimeHelpers.GetObjectValue(this.Dir), (object) ("// " + Conversions.ToString(RuntimeHelpers.GetObjectValue(this.NameMonster))));
+      this.ListBox1.Items.Add((object) spawnLine2);
     }
     else if (Operators.ConditionalCompareObjectEqual(this.ComboBox2.SelectedItem, (object) "3 - Bone King / Golden Monsters", false))
     {
@@ -1811,7 +2143,10 @@ public class Form1 : Form
       }
       this.colore = (object) Color.DarkGoldenrod;
       if (!this.IsAreaSpotMode())
-        this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.CordX_spot), (object) "\t"), this.CordY_spot), (object) "\t"), (object) "-1"), (object) "\t"), this.Quant), (object) "\t"), (object) "// "), this.NameMonster));
+      {
+        string spawnLine3 = BuildSpawnLine(RuntimeHelpers.GetObjectValue(this.Monster), RuntimeHelpers.GetObjectValue(this.MapNumber), (object) "30", RuntimeHelpers.GetObjectValue(this.CordX), RuntimeHelpers.GetObjectValue(this.CordY), RuntimeHelpers.GetObjectValue(this.CordX_spot), RuntimeHelpers.GetObjectValue(this.CordY_spot), (object) "-1", RuntimeHelpers.GetObjectValue(this.Quant), (object) ("// " + Conversions.ToString(RuntimeHelpers.GetObjectValue(this.NameMonster))));
+        this.ListBox1.Items.Add((object) spawnLine3);
+      }
     }
     else
     {
@@ -1819,15 +2154,16 @@ public class Form1 : Form
         return;
       if (Operators.ConditionalCompareObjectEqual(this.Inizio, (object) 0, false))
       {
-        this.ListBox1.Items.Add((object) "//=========================================================================================");
+        this.ListBox1.Items.Add((object) "//=====================================================================================");
         this.ListBox1.Items.Add((object) $"//\t{this.GroupBox1.Text} Blood Castle Monsters / Gate");
-        this.ListBox1.Items.Add((object) "//=========================================================================================");
+        this.ListBox1.Items.Add((object) "//=====================================================================================");
         this.ListBox1.Items.Add((object) "//Mob\tMap\tRad\tX\tY\tStr\tName");
         this.ListBox1.Items.Add((object) "4");
         this.Inizio = (object) 1;
       }
       this.colore = (object) Color.Blue;
-      this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.Dir), (object) "\t"), (object) "// "), this.NameMonster));
+      string spawnLine4 = BuildSpawnLine(RuntimeHelpers.GetObjectValue(this.Monster), RuntimeHelpers.GetObjectValue(this.MapNumber), (object) "30", RuntimeHelpers.GetObjectValue(this.CordX), RuntimeHelpers.GetObjectValue(this.CordY), RuntimeHelpers.GetObjectValue(this.Dir), (object) ("// " + Conversions.ToString(RuntimeHelpers.GetObjectValue(this.NameMonster))));
+      this.ListBox1.Items.Add((object) spawnLine4);
     }
   }
 
@@ -2576,6 +2912,16 @@ public class Form1 : Form
     return "//Mob\tMap\tRad\tX\tY\tStr\tName";
   }
 
+  private static string BuildSpawnLine(params object[] values)
+  {
+    if (values == null || values.Length == 0)
+      return string.Empty;
+    string[] parts = new string[values.Length];
+    for (int index = 0; index < values.Length; ++index)
+      parts[index] = values[index] != null ? Conversions.ToString(values[index]) : string.Empty;
+    return string.Join("\t", parts);
+  }
+
   private string FormatSpawnListEntry(MonsterMap map, MonsterSpot spot, MonsterSpawnEntry spawn)
   {
     string monsterName = this.LookupMonsterName(spawn.Index);
@@ -2694,43 +3040,361 @@ public class Form1 : Form
     };
     foreach (string path in strArray)
     {
-      if (File.Exists(path))
-      {
-        try
-        {
-          XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterDefinitionList));
-          using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
-          {
-            MonsterDefinitionList definitionList = (MonsterDefinitionList) xmlSerializer.Deserialize((Stream) fileStream);
-            this.ApplyMonsterDefinitionsToList(definitionList);
-            EditorLogger.LogInfo("Loaded monster definitions from XML '" + path + "'.");
-            return true;
-          }
-        }
-        catch (InvalidOperationException ex)
-        {
-          EditorLogger.LogError("Failed to parse monster definitions from XML '" + path + "'.", ex);
-        }
-        catch (Exception ex)
-        {
-          EditorLogger.LogError("Unexpected error reading monster definitions from XML '" + path + "'.", ex);
-        }
-      }
+      if (File.Exists(path) && this.TryLoadMonsterListXmlFromPath(path, false))
+        return true;
     }
     return false;
   }
 
   private void LoadMonsterListText()
   {
-    string path = Path.Combine(this.CurrDir, "Monster.txt");
-    this.ListBox2.Items.Clear();
+    this.LoadMonsterListTextFromPath(Path.Combine(this.CurrDir, "Monster.txt"), false);
+  }
+
+  private void ApplyMonsterDefinitionsToList(MonsterDefinitionList definitions)
+  {
+    if (definitions == null)
+      this.SetMonsterDefinitions((IEnumerable<MonsterDefinition>) null);
+    else
+      this.SetMonsterDefinitions(definitions.Monsters);
+    EditorLogger.LogInfo("Applied " + this.monsterDefinitions.Count.ToString((IFormatProvider) CultureInfo.InvariantCulture) + " monster definition(s) to the list.");
+  }
+
+  private void InitializeMonsterEditor()
+  {
+    this.monsterDefinitions.ListChanged += new ListChangedEventHandler(this.MonsterDefinitions_ListChanged);
+    if (this.MonsterDataGridView != null)
+    {
+      this.MonsterDataGridView.AutoGenerateColumns = false;
+      this.MonsterDataGridView.DataSource = (object) this.monsterDefinitions;
+    }
+    this.UpdateMonsterSelectionList();
+    this.UpdateMonsterActionButtons();
+  }
+
+  private void SetMonsterDefinitions(IEnumerable<MonsterDefinition> definitions)
+  {
+    this.isLoadingMonsterDefinitions = true;
+    try
+    {
+      this.monsterDefinitions.Clear();
+      if (definitions != null)
+      {
+        foreach (MonsterDefinition definition in definitions.OrderBy<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)))
+        {
+          MonsterDefinition monsterDefinition = new MonsterDefinition();
+          monsterDefinition.Index = definition.Index;
+          monsterDefinition.Name = definition.Name ?? string.Empty;
+          this.monsterDefinitions.Add(monsterDefinition);
+        }
+      }
+    }
+    finally
+    {
+      this.isLoadingMonsterDefinitions = false;
+    }
+    this.UpdateMonsterSelectionList();
+    this.UpdateMonsterActionButtons();
+  }
+
+  private void MonsterDefinitions_ListChanged(object sender, ListChangedEventArgs e)
+  {
+    if (this.isLoadingMonsterDefinitions)
+      return;
+    this.UpdateMonsterSelectionList();
+    this.UpdateMonsterActionButtons();
+  }
+
+  private void UpdateMonsterSelectionList()
+  {
+    List<MonsterDefinition> list = this.monsterDefinitions.OrderBy<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)).ToList();
     this.monsterNames.Clear();
+    foreach (MonsterDefinition monsterDefinition in list)
+      this.monsterNames[monsterDefinition.Index] = monsterDefinition.Name ?? string.Empty;
+    if (this.ListBox2 == null)
+      return;
+    int? nullable = this.GetSelectedMonsterIndex();
+    this.ListBox2.BeginUpdate();
+    this.ListBox2.Items.Clear();
+    int num1 = 0;
+    int num2 = -1;
+    foreach (MonsterDefinition monsterDefinition in list)
+    {
+      string str = monsterDefinition.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + " " + (monsterDefinition.Name ?? string.Empty);
+      this.ListBox2.Items.Add((object) str);
+      if (nullable.HasValue && nullable.Value == monsterDefinition.Index)
+        num2 = num1;
+      checked { ++num1; }
+    }
+    this.ListBox2.EndUpdate();
+    if (num2 >= 0 && num2 < this.ListBox2.Items.Count)
+      this.ListBox2.SelectedIndex = num2;
+    else if (this.ListBox2.Items.Count == 0)
+      this.ListBox2.SelectedIndex = -1;
+  }
+
+  private int? GetSelectedMonsterIndex()
+  {
+    if (this.ListBox2 == null || this.ListBox2.SelectedItem == null)
+      return new int?();
+    string str = this.ListBox2.SelectedItem.ToString();
+    if (string.IsNullOrEmpty(str))
+      return new int?();
+    int length = str.IndexOf(' ');
+    if (length < 0)
+      length = str.Length;
+    int result;
+    if (int.TryParse(str.Substring(0, length), NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture, out result))
+      return new int?(result);
+    return new int?();
+  }
+
+  private void UpdateMonsterActionButtons()
+  {
+    if (this.ButtonDeleteMonster == null)
+      return;
+    bool flag = false;
+    if (this.MonsterDataGridView != null && this.MonsterDataGridView.CurrentRow != null && !this.MonsterDataGridView.CurrentRow.IsNewRow)
+      flag = true;
+    this.ButtonDeleteMonster.Enabled = flag;
+  }
+
+  private void UpdateMonsterFileStatus()
+  {
+    if (this.MonsterXmlPathTextBox != null)
+      this.MonsterXmlPathTextBox.Text = this.currentMonsterXmlPath ?? string.Empty;
+    if (this.MonsterTxtPathTextBox == null)
+      return;
+    this.MonsterTxtPathTextBox.Text = this.currentMonsterTextPath ?? string.Empty;
+  }
+
+  private void MonsterDataGridView_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+  {
+    if (this.MonsterDataGridView == null || e.RowIndex < 0)
+      return;
+    string dataPropertyName = this.MonsterDataGridView.Columns[e.ColumnIndex].DataPropertyName;
+    if (string.Equals(dataPropertyName, "Index", StringComparison.Ordinal))
+    {
+      int result;
+      if (!int.TryParse(Conversions.ToString(e.FormattedValue), NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture, out result))
+      {
+        this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = "Index must be a numeric value.";
+        e.Cancel = true;
+      }
+      else
+        this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = string.Empty;
+    }
+    else if (string.Equals(dataPropertyName, "Name", StringComparison.Ordinal))
+    {
+      string str = e.FormattedValue != null ? e.FormattedValue.ToString() : string.Empty;
+      if (Form1.IsStringNullOrWhiteSpace(str))
+      {
+        this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = "Name cannot be empty.";
+        e.Cancel = true;
+      }
+      else
+        this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = string.Empty;
+    }
+  }
+
+  private void MonsterDataGridView_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+  {
+    if (this.MonsterDataGridView == null || e.RowIndex < 0 || e.RowIndex >= this.MonsterDataGridView.Rows.Count)
+      return;
+    this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = string.Empty;
+  }
+
+  private void MonsterDataGridView_DataError(object sender, DataGridViewDataErrorEventArgs e)
+  {
+    if (e == null || e.Exception == null)
+      return;
+    EditorLogger.LogError("Monster grid data error.", e.Exception);
+    e.Cancel = true;
+  }
+
+  private void MonsterDataGridView_SelectionChanged(object sender, EventArgs e) => this.UpdateMonsterActionButtons();
+
+  private void ButtonLoadMonsterXml_Click(object sender, EventArgs e)
+  {
+    string path = !string.IsNullOrEmpty(this.currentMonsterXmlPath) ? this.currentMonsterXmlPath : Path.Combine(this.CurrDir, "IGC_MonsterList.xml");
+    this.OpenMonsterFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
+    this.OpenMonsterFileDialog.FilterIndex = 1;
+    this.OpenMonsterFileDialog.FileName = Path.GetFileName(path);
+    string directoryName = Path.GetDirectoryName(path);
+    if (!string.IsNullOrEmpty(directoryName) && Directory.Exists(directoryName))
+      this.OpenMonsterFileDialog.InitialDirectory = directoryName;
+    else
+      this.OpenMonsterFileDialog.InitialDirectory = this.CurrDir;
+    if (this.OpenMonsterFileDialog.ShowDialog() != DialogResult.OK)
+      return;
+    if (this.TryLoadMonsterListXmlFromPath(this.OpenMonsterFileDialog.FileName, true))
+      Interaction.MsgBox((object) "Monster XML loaded successfully.", MsgBoxStyle.Information);
+  }
+
+  private void ButtonSaveMonsterXml_Click(object sender, EventArgs e)
+  {
+    this.CommitMonsterGridChanges();
+    string errorMessage;
+    if (!this.ValidateMonsterDefinitions(out errorMessage))
+    {
+      Interaction.MsgBox((object) errorMessage, MsgBoxStyle.Critical);
+      return;
+    }
+    string path = !string.IsNullOrEmpty(this.currentMonsterXmlPath) ? this.currentMonsterXmlPath : Path.Combine(this.CurrDir, "IGC_MonsterList.xml");
+    this.SaveMonsterFileDialog.Filter = "XML files (*.xml)|*.xml|All files (*.*)|*.*";
+    this.SaveMonsterFileDialog.FilterIndex = 1;
+    this.SaveMonsterFileDialog.DefaultExt = "xml";
+    this.SaveMonsterFileDialog.FileName = Path.GetFileName(path);
+    string directoryName = Path.GetDirectoryName(path);
+    if (!string.IsNullOrEmpty(directoryName) && Directory.Exists(directoryName))
+      this.SaveMonsterFileDialog.InitialDirectory = directoryName;
+    else
+      this.SaveMonsterFileDialog.InitialDirectory = this.CurrDir;
+    if (this.SaveMonsterFileDialog.ShowDialog() != DialogResult.OK)
+      return;
+    string fileName = this.SaveMonsterFileDialog.FileName;
+    try
+    {
+      this.SaveMonsterDefinitionsToXml(fileName);
+      this.currentMonsterXmlPath = fileName;
+      this.UpdateMonsterFileStatus();
+      Interaction.MsgBox((object) "Monster XML saved successfully.", MsgBoxStyle.Information);
+    }
+    catch (Exception ex)
+    {
+      EditorLogger.LogError("Failed to save monster definitions to XML '" + fileName + "'.", ex);
+      int num = (int) Interaction.MsgBox((object) "Failed to save monster XML file.", MsgBoxStyle.Critical);
+    }
+  }
+
+  private void ButtonLoadMonsterTxt_Click(object sender, EventArgs e)
+  {
+    string path = !string.IsNullOrEmpty(this.currentMonsterTextPath) ? this.currentMonsterTextPath : Path.Combine(this.CurrDir, "Monster.txt");
+    this.OpenMonsterFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    this.OpenMonsterFileDialog.FilterIndex = 1;
+    this.OpenMonsterFileDialog.FileName = Path.GetFileName(path);
+    string directoryName = Path.GetDirectoryName(path);
+    if (!string.IsNullOrEmpty(directoryName) && Directory.Exists(directoryName))
+      this.OpenMonsterFileDialog.InitialDirectory = directoryName;
+    else
+      this.OpenMonsterFileDialog.InitialDirectory = this.CurrDir;
+    if (this.OpenMonsterFileDialog.ShowDialog() != DialogResult.OK)
+      return;
+    if (this.LoadMonsterListTextFromPath(this.OpenMonsterFileDialog.FileName, true))
+      Interaction.MsgBox((object) "Monster TXT loaded successfully.", MsgBoxStyle.Information);
+  }
+
+  private void ButtonSaveMonsterTxt_Click(object sender, EventArgs e)
+  {
+    this.CommitMonsterGridChanges();
+    string errorMessage;
+    if (!this.ValidateMonsterDefinitions(out errorMessage))
+    {
+      Interaction.MsgBox((object) errorMessage, MsgBoxStyle.Critical);
+      return;
+    }
+    string path = !string.IsNullOrEmpty(this.currentMonsterTextPath) ? this.currentMonsterTextPath : Path.Combine(this.CurrDir, "Monster.txt");
+    this.SaveMonsterFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    this.SaveMonsterFileDialog.FilterIndex = 1;
+    this.SaveMonsterFileDialog.DefaultExt = "txt";
+    this.SaveMonsterFileDialog.FileName = Path.GetFileName(path);
+    string directoryName = Path.GetDirectoryName(path);
+    if (!string.IsNullOrEmpty(directoryName) && Directory.Exists(directoryName))
+      this.SaveMonsterFileDialog.InitialDirectory = directoryName;
+    else
+      this.SaveMonsterFileDialog.InitialDirectory = this.CurrDir;
+    if (this.SaveMonsterFileDialog.ShowDialog() != DialogResult.OK)
+      return;
+    string fileName = this.SaveMonsterFileDialog.FileName;
+    try
+    {
+      this.SaveMonsterDefinitionsToText(fileName);
+      this.currentMonsterTextPath = fileName;
+      this.UpdateMonsterFileStatus();
+      Interaction.MsgBox((object) "Monster TXT saved successfully.", MsgBoxStyle.Information);
+    }
+    catch (Exception ex)
+    {
+      EditorLogger.LogError("Failed to save monster definitions to text file '" + fileName + "'.", ex);
+      int num = (int) Interaction.MsgBox((object) "Failed to save monster TXT file.", MsgBoxStyle.Critical);
+    }
+  }
+
+  private void ButtonAddMonster_Click(object sender, EventArgs e)
+  {
+    int num = 0;
+    if (this.monsterDefinitions.Count > 0)
+      num = this.monsterDefinitions.Max<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)) + 1;
+    MonsterDefinition monsterDefinition = new MonsterDefinition();
+    monsterDefinition.Index = num;
+    monsterDefinition.Name = "New Monster";
+    this.monsterDefinitions.Add(monsterDefinition);
+    if (this.MonsterDataGridView == null || this.MonsterDataGridView.Rows.Count <= 0)
+      return;
+    int rowIndex = this.MonsterDataGridView.Rows.Count - 1;
+    if (rowIndex < 0)
+      return;
+    this.MonsterDataGridView.CurrentCell = this.MonsterDataGridView[0, rowIndex];
+    if (rowIndex >= 0)
+      this.MonsterDataGridView.FirstDisplayedScrollingRowIndex = rowIndex;
+  }
+
+  private void ButtonDeleteMonster_Click(object sender, EventArgs e)
+  {
+    if (this.MonsterDataGridView == null)
+      return;
+    DataGridViewRow currentRow = this.MonsterDataGridView.CurrentRow;
+    if (currentRow == null || currentRow.IsNewRow)
+      return;
+    MonsterDefinition monsterDefinition = currentRow.DataBoundItem as MonsterDefinition;
+    if (monsterDefinition == null)
+      return;
+    this.monsterDefinitions.Remove(monsterDefinition);
+  }
+
+  private bool TryLoadMonsterListXmlFromPath(string path, bool showErrors)
+  {
+    try
+    {
+      XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterDefinitionList));
+      using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read))
+      {
+        MonsterDefinitionList definitionList = (MonsterDefinitionList) xmlSerializer.Deserialize((Stream) fileStream);
+        this.ApplyMonsterDefinitionsToList(definitionList);
+      }
+      this.currentMonsterXmlPath = path;
+      this.UpdateMonsterFileStatus();
+      EditorLogger.LogInfo("Loaded monster definitions from XML '" + path + "'.");
+      return true;
+    }
+    catch (InvalidOperationException ex)
+    {
+      EditorLogger.LogError("Failed to parse monster definitions from XML '" + path + "'.", ex);
+      if (showErrors)
+        Interaction.MsgBox((object) "Failed to load monster definitions from XML.", MsgBoxStyle.Critical);
+    }
+    catch (Exception ex)
+    {
+      EditorLogger.LogError("Unexpected error reading monster definitions from XML '" + path + "'.", ex);
+      if (showErrors)
+        Interaction.MsgBox((object) "Failed to load monster definitions from XML.", MsgBoxStyle.Critical);
+    }
+    return false;
+  }
+
+  private bool LoadMonsterListTextFromPath(string path, bool showErrors)
+  {
     if (!File.Exists(path))
     {
       EditorLogger.LogError("Monster.txt not found at '" + path + "'.", (Exception) null);
+      if (showErrors)
+      {
+        Interaction.MsgBox((object) "Monster.txt file not found.", MsgBoxStyle.Critical);
+        return false;
+      }
       throw new FileNotFoundException("Monster.txt file not found.", path);
     }
-    int count = 0;
+    List<MonsterDefinition> monsterDefinitionList = new List<MonsterDefinition>();
     try
     {
       using (StreamReader streamReader = new StreamReader(path))
@@ -2738,39 +3402,116 @@ public class Form1 : Form
         while (!streamReader.EndOfStream)
         {
           string str = streamReader.ReadLine();
-          if (!string.IsNullOrEmpty(str))
+          if (!Form1.IsStringNullOrWhiteSpace(str))
           {
-            this.ListBox2.Items.Add((object) str);
             string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
             int result;
-            if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out result))
-              this.monsterNames[result] = string.Join(" ", strArray.Skip(1).ToArray());
-            checked { ++count; }
+            if (strArray.Length >= 2 && int.TryParse(strArray[0], NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture, out result))
+            {
+              MonsterDefinition monsterDefinition = new MonsterDefinition();
+              monsterDefinition.Index = result;
+              monsterDefinition.Name = string.Join(" ", ((IEnumerable<string>) strArray).Skip<string>(1).ToArray());
+              monsterDefinitionList.Add(monsterDefinition);
+            }
           }
         }
       }
-      EditorLogger.LogInfo("Loaded monster definitions from text file '" + path + "' with " + Conversions.ToString(count) + " entry(ies).");
+      this.SetMonsterDefinitions((IEnumerable<MonsterDefinition>) monsterDefinitionList);
+      this.currentMonsterTextPath = path;
+      this.UpdateMonsterFileStatus();
+      EditorLogger.LogInfo("Loaded monster definitions from text file '" + path + "' with " + monsterDefinitionList.Count.ToString((IFormatProvider) CultureInfo.InvariantCulture) + " entry(ies).");
+      return true;
     }
     catch (Exception ex)
     {
       EditorLogger.LogError("Failed to read Monster.txt from '" + path + "'.", ex);
+      if (showErrors)
+      {
+        Interaction.MsgBox((object) "Failed to load monster definitions from text file.", MsgBoxStyle.Critical);
+        return false;
+      }
       throw;
     }
   }
 
-  private void ApplyMonsterDefinitionsToList(MonsterDefinitionList definitions)
+  private void SaveMonsterDefinitionsToXml(string path)
   {
-    this.ListBox2.Items.Clear();
-    this.monsterNames.Clear();
-    if (definitions == null || definitions.Monsters == null)
-      return;
-    foreach (MonsterDefinition monster in definitions.Monsters.OrderBy<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)))
+    MonsterDefinitionList monsterDefinitionList = new MonsterDefinitionList();
+    monsterDefinitionList.Monsters = this.EnumerateOrderedMonsterDefinitions().ToList();
+    XmlSerializer xmlSerializer = new XmlSerializer(typeof (MonsterDefinitionList));
+    XmlSerializerNamespaces serializerNamespaces = new XmlSerializerNamespaces();
+    serializerNamespaces.Add(string.Empty, string.Empty);
+    using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write))
+      xmlSerializer.Serialize((Stream) fileStream, (object) monsterDefinitionList, serializerNamespaces);
+    EditorLogger.LogInfo("Saved monster definitions to XML '" + path + "'.");
+  }
+
+  private void SaveMonsterDefinitionsToText(string path)
+  {
+    using (StreamWriter streamWriter = new StreamWriter(path))
     {
-      string str = monster.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + " " + monster.Name;
-      this.ListBox2.Items.Add((object) str);
-      this.monsterNames[monster.Index] = monster.Name;
+      foreach (MonsterDefinition monsterDefinition in this.EnumerateOrderedMonsterDefinitions())
+        streamWriter.WriteLine(monsterDefinition.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + "\t" + monsterDefinition.Name);
     }
-    EditorLogger.LogInfo("Applied " + Conversions.ToString(this.monsterNames.Count) + " monster definition(s) to the list.");
+    EditorLogger.LogInfo("Saved monster definitions to text file '" + path + "'.");
+  }
+
+  private IEnumerable<MonsterDefinition> EnumerateOrderedMonsterDefinitions()
+  {
+    return this.monsterDefinitions.OrderBy<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)).Select<MonsterDefinition, MonsterDefinition>((Func<MonsterDefinition, MonsterDefinition>) (m => new MonsterDefinition()
+    {
+      Index = m.Index,
+      Name = m.Name ?? string.Empty
+    }));
+  }
+
+  private void CommitMonsterGridChanges()
+  {
+    if (this.MonsterDataGridView != null)
+      this.MonsterDataGridView.EndEdit();
+    CurrencyManager currencyManager = this.BindingContext[(object) this.monsterDefinitions] as CurrencyManager;
+    if (currencyManager == null)
+      return;
+    currencyManager.EndCurrentEdit();
+  }
+
+  private bool ValidateMonsterDefinitions(out string errorMessage)
+  {
+    errorMessage = (string) null;
+    HashSet<int> intSet = new HashSet<int>();
+    foreach (MonsterDefinition monsterDefinition in this.monsterDefinitions)
+    {
+      if (monsterDefinition == null)
+        continue;
+      if (monsterDefinition.Index < 0)
+      {
+        errorMessage = "Monster index cannot be negative.";
+        return false;
+      }
+      if (!intSet.Add(monsterDefinition.Index))
+      {
+        errorMessage = "Duplicate monster index: " + monsterDefinition.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + ".";
+        return false;
+      }
+      if (Form1.IsStringNullOrWhiteSpace(monsterDefinition.Name))
+      {
+        errorMessage = "Monster name cannot be empty for index " + monsterDefinition.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + ".";
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static bool IsStringNullOrWhiteSpace(string value)
+  {
+    if (value == null)
+      return true;
+    for (int index = 0; index < value.Length; ++index)
+    {
+      if (!char.IsWhiteSpace(value[index]))
+        return false;
+    }
+    return true;
   }
 
   public void punti()
