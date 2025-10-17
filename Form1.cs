@@ -7,6 +7,7 @@
 using Microsoft.VisualBasic;
 using Microsoft.VisualBasic.CompilerServices;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -106,6 +107,22 @@ public class Form1 : Form
   private DataGridViewTextBoxColumn _MonsterIndexColumn;
   [AccessedThroughProperty("MonsterNameColumn")]
   private DataGridViewTextBoxColumn _MonsterNameColumn;
+  [AccessedThroughProperty("MonsterTabLayoutPanel")]
+  private TableLayoutPanel _MonsterTabLayoutPanel;
+  [AccessedThroughProperty("MonsterFileLayoutPanel")]
+  private TableLayoutPanel _MonsterFileLayoutPanel;
+  [AccessedThroughProperty("MonsterActionPanel")]
+  private FlowLayoutPanel _MonsterActionPanel;
+  [AccessedThroughProperty("MonsterSummaryLabel")]
+  private Label _MonsterSummaryLabel;
+  [AccessedThroughProperty("MonsterSearchLabel")]
+  private Label _MonsterSearchLabel;
+  [AccessedThroughProperty("MonsterSearchTextBox")]
+  private TextBox _MonsterSearchTextBox;
+  [AccessedThroughProperty("MonsterClearSearchButton")]
+  private Button _MonsterClearSearchButton;
+  [AccessedThroughProperty("MonsterToolTip")]
+  private ToolTip _MonsterToolTip;
   [AccessedThroughProperty("OpenMonsterFileDialog")]
   private OpenFileDialog _OpenMonsterFileDialog;
   [AccessedThroughProperty("SaveMonsterFileDialog")]
@@ -371,6 +388,8 @@ public class Form1 : Form
     this.Label7 = new Label();
     this.Button2 = new Button();
     this.TabPage2 = new TabPage();
+    this.MonsterTabLayoutPanel = new TableLayoutPanel();
+    this.MonsterFileLayoutPanel = new TableLayoutPanel();
     this.MonsterXmlPathLabel = new Label();
     this.MonsterXmlPathTextBox = new TextBox();
     this.ButtonLoadMonsterXml = new Button();
@@ -379,13 +398,19 @@ public class Form1 : Form
     this.MonsterTxtPathTextBox = new TextBox();
     this.ButtonLoadMonsterTxt = new Button();
     this.ButtonSaveMonsterTxt = new Button();
+    this.MonsterActionPanel = new FlowLayoutPanel();
+    this.MonsterSummaryLabel = new Label();
     this.ButtonAddMonster = new Button();
     this.ButtonDeleteMonster = new Button();
+    this.MonsterSearchLabel = new Label();
+    this.MonsterSearchTextBox = new TextBox();
+    this.MonsterClearSearchButton = new Button();
     this.MonsterDataGridView = new DataGridView();
     this.MonsterIndexColumn = new DataGridViewTextBoxColumn();
     this.MonsterNameColumn = new DataGridViewTextBoxColumn();
     this.OpenMonsterFileDialog = new OpenFileDialog();
     this.SaveMonsterFileDialog = new SaveFileDialog();
+    this.MonsterToolTip = new ToolTip(this.components);
     this.Timer1 = new Timer(this.components);
     this.StatusStrip1.SuspendLayout();
     this.GroupBox1.SuspendLayout();
@@ -396,6 +421,9 @@ public class Form1 : Form
     this.TabControl1.SuspendLayout();
     this.TabPage1.SuspendLayout();
     this.GroupBox5.SuspendLayout();
+    this.MonsterTabLayoutPanel.SuspendLayout();
+    this.MonsterFileLayoutPanel.SuspendLayout();
+    this.MonsterActionPanel.SuspendLayout();
     ((ISupportInitialize) this.MonsterDataGridView).BeginInit();
     this.TabPage2.SuspendLayout();
     this.SuspendLayout();
@@ -1040,86 +1068,158 @@ public class Form1 : Form
     this.Button2.TabIndex = 5;
     this.Button2.Text = "Load Mob";
     this.Button2.UseVisualStyleBackColor = true;
-    this.TabPage2.Controls.Add((Control) this.MonsterDataGridView);
-    this.TabPage2.Controls.Add((Control) this.ButtonDeleteMonster);
-    this.TabPage2.Controls.Add((Control) this.ButtonAddMonster);
-    this.TabPage2.Controls.Add((Control) this.ButtonSaveMonsterTxt);
-    this.TabPage2.Controls.Add((Control) this.ButtonLoadMonsterTxt);
-    this.TabPage2.Controls.Add((Control) this.MonsterTxtPathTextBox);
-    this.TabPage2.Controls.Add((Control) this.MonsterTxtPathLabel);
-    this.TabPage2.Controls.Add((Control) this.ButtonSaveMonsterXml);
-    this.TabPage2.Controls.Add((Control) this.ButtonLoadMonsterXml);
-    this.TabPage2.Controls.Add((Control) this.MonsterXmlPathTextBox);
-    this.TabPage2.Controls.Add((Control) this.MonsterXmlPathLabel);
+    this.MonsterFileLayoutPanel.BackColor = Color.FromArgb(243, 246, 249);
+    this.MonsterFileLayoutPanel.ColumnCount = 4;
+    this.MonsterFileLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+    this.MonsterFileLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+    this.MonsterFileLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120f));
+    this.MonsterFileLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120f));
+    this.MonsterFileLayoutPanel.Controls.Add((Control) this.MonsterXmlPathLabel, 0, 0);
+    this.MonsterFileLayoutPanel.Controls.Add((Control) this.MonsterXmlPathTextBox, 1, 0);
+    this.MonsterFileLayoutPanel.Controls.Add((Control) this.ButtonLoadMonsterXml, 2, 0);
+    this.MonsterFileLayoutPanel.Controls.Add((Control) this.ButtonSaveMonsterXml, 3, 0);
+    this.MonsterFileLayoutPanel.Controls.Add((Control) this.MonsterTxtPathLabel, 0, 1);
+    this.MonsterFileLayoutPanel.Controls.Add((Control) this.MonsterTxtPathTextBox, 1, 1);
+    this.MonsterFileLayoutPanel.Controls.Add((Control) this.ButtonLoadMonsterTxt, 2, 1);
+    this.MonsterFileLayoutPanel.Controls.Add((Control) this.ButtonSaveMonsterTxt, 3, 1);
+    this.MonsterFileLayoutPanel.Dock = DockStyle.Fill;
+    this.MonsterFileLayoutPanel.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
+    this.MonsterFileLayoutPanel.Location = new Point(3, 3);
+    this.MonsterFileLayoutPanel.Margin = new Padding(3, 3, 3, 0);
+    this.MonsterFileLayoutPanel.Name = "MonsterFileLayoutPanel";
+    this.MonsterFileLayoutPanel.Padding = new Padding(12, 10, 12, 10);
+    this.MonsterFileLayoutPanel.RowCount = 2;
+    this.MonsterFileLayoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+    this.MonsterFileLayoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+    this.MonsterFileLayoutPanel.Size = new Size(916, 84);
+    this.MonsterFileLayoutPanel.TabIndex = 0;
     this.MonsterXmlPathLabel.AutoSize = true;
-    this.MonsterXmlPathLabel.Location = new Point(6, 6);
+    this.MonsterXmlPathLabel.Margin = new Padding(0, 6, 8, 6);
     this.MonsterXmlPathLabel.Name = "MonsterXmlPathLabel";
     this.MonsterXmlPathLabel.Size = new Size(117, 13);
     this.MonsterXmlPathLabel.TabIndex = 0;
     this.MonsterXmlPathLabel.Text = "IGC_MonsterList.xml:";
-    this.MonsterXmlPathTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-    this.MonsterXmlPathTextBox.Location = new Point(9, 22);
+    this.MonsterXmlPathTextBox.BackColor = Color.White;
+    this.MonsterXmlPathTextBox.BorderStyle = BorderStyle.FixedSingle;
+    this.MonsterXmlPathTextBox.Dock = DockStyle.Fill;
+    this.MonsterXmlPathTextBox.Margin = new Padding(0, 3, 8, 3);
     this.MonsterXmlPathTextBox.Name = "MonsterXmlPathTextBox";
     this.MonsterXmlPathTextBox.ReadOnly = true;
-    this.MonsterXmlPathTextBox.Size = new Size(658, 20);
+    this.MonsterXmlPathTextBox.Size = new Size(664, 20);
     this.MonsterXmlPathTextBox.TabIndex = 1;
-    this.ButtonLoadMonsterXml.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-    this.ButtonLoadMonsterXml.Location = new Point(673, 20);
+    this.ButtonLoadMonsterXml.Location = new Point(788, 13);
+    this.ButtonLoadMonsterXml.Margin = new Padding(0, 3, 6, 3);
     this.ButtonLoadMonsterXml.Name = "ButtonLoadMonsterXml";
-    this.ButtonLoadMonsterXml.Size = new Size(120, 23);
+    this.ButtonLoadMonsterXml.Size = new Size(114, 28);
     this.ButtonLoadMonsterXml.TabIndex = 2;
     this.ButtonLoadMonsterXml.Text = "Load XML";
     this.ButtonLoadMonsterXml.UseVisualStyleBackColor = true;
-    this.ButtonSaveMonsterXml.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-    this.ButtonSaveMonsterXml.Location = new Point(799, 20);
+    this.ButtonSaveMonsterXml.Location = new Point(908, 13);
+    this.ButtonSaveMonsterXml.Margin = new Padding(0, 3, 0, 3);
     this.ButtonSaveMonsterXml.Name = "ButtonSaveMonsterXml";
-    this.ButtonSaveMonsterXml.Size = new Size(120, 23);
+    this.ButtonSaveMonsterXml.Size = new Size(110, 28);
     this.ButtonSaveMonsterXml.TabIndex = 3;
     this.ButtonSaveMonsterXml.Text = "Save XML";
     this.ButtonSaveMonsterXml.UseVisualStyleBackColor = true;
     this.MonsterTxtPathLabel.AutoSize = true;
-    this.MonsterTxtPathLabel.Location = new Point(6, 54);
+    this.MonsterTxtPathLabel.Margin = new Padding(0, 6, 8, 6);
     this.MonsterTxtPathLabel.Name = "MonsterTxtPathLabel";
     this.MonsterTxtPathLabel.Size = new Size(68, 13);
     this.MonsterTxtPathLabel.TabIndex = 4;
     this.MonsterTxtPathLabel.Text = "Monster.txt:";
-    this.MonsterTxtPathTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-    this.MonsterTxtPathTextBox.Location = new Point(9, 70);
+    this.MonsterTxtPathTextBox.BackColor = Color.White;
+    this.MonsterTxtPathTextBox.BorderStyle = BorderStyle.FixedSingle;
+    this.MonsterTxtPathTextBox.Dock = DockStyle.Fill;
+    this.MonsterTxtPathTextBox.Margin = new Padding(0, 3, 8, 3);
     this.MonsterTxtPathTextBox.Name = "MonsterTxtPathTextBox";
     this.MonsterTxtPathTextBox.ReadOnly = true;
-    this.MonsterTxtPathTextBox.Size = new Size(658, 20);
+    this.MonsterTxtPathTextBox.Size = new Size(664, 20);
     this.MonsterTxtPathTextBox.TabIndex = 5;
-    this.ButtonLoadMonsterTxt.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-    this.ButtonLoadMonsterTxt.Location = new Point(673, 68);
+    this.ButtonLoadMonsterTxt.Location = new Point(788, 47);
+    this.ButtonLoadMonsterTxt.Margin = new Padding(0, 3, 6, 3);
     this.ButtonLoadMonsterTxt.Name = "ButtonLoadMonsterTxt";
-    this.ButtonLoadMonsterTxt.Size = new Size(120, 23);
+    this.ButtonLoadMonsterTxt.Size = new Size(114, 28);
     this.ButtonLoadMonsterTxt.TabIndex = 6;
     this.ButtonLoadMonsterTxt.Text = "Load TXT";
     this.ButtonLoadMonsterTxt.UseVisualStyleBackColor = true;
-    this.ButtonSaveMonsterTxt.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-    this.ButtonSaveMonsterTxt.Location = new Point(799, 68);
+    this.ButtonSaveMonsterTxt.Location = new Point(908, 47);
+    this.ButtonSaveMonsterTxt.Margin = new Padding(0, 3, 0, 3);
     this.ButtonSaveMonsterTxt.Name = "ButtonSaveMonsterTxt";
-    this.ButtonSaveMonsterTxt.Size = new Size(120, 23);
+    this.ButtonSaveMonsterTxt.Size = new Size(110, 28);
     this.ButtonSaveMonsterTxt.TabIndex = 7;
     this.ButtonSaveMonsterTxt.Text = "Save TXT";
     this.ButtonSaveMonsterTxt.UseVisualStyleBackColor = true;
-    this.ButtonAddMonster.Location = new Point(9, 106);
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterXmlPathTextBox, "Currently loaded monster XML file.");
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterTxtPathTextBox, "Currently loaded monster TXT file.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonLoadMonsterXml, "Load monsters from an XML definition file.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonSaveMonsterXml, "Save the current monsters to an XML file.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonLoadMonsterTxt, "Load monsters from a TXT definition file.");
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonSaveMonsterTxt, "Save the current monsters to a TXT file.");
+    this.MonsterActionPanel.AutoSize = true;
+    this.MonsterActionPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+    this.MonsterActionPanel.BackColor = Color.FromArgb(243, 246, 249);
+    this.MonsterActionPanel.Controls.Add((Control) this.MonsterSummaryLabel);
+    this.MonsterActionPanel.Controls.Add((Control) this.ButtonAddMonster);
+    this.MonsterActionPanel.Controls.Add((Control) this.ButtonDeleteMonster);
+    this.MonsterActionPanel.Controls.Add((Control) this.MonsterSearchLabel);
+    this.MonsterActionPanel.Controls.Add((Control) this.MonsterSearchTextBox);
+    this.MonsterActionPanel.Controls.Add((Control) this.MonsterClearSearchButton);
+    this.MonsterActionPanel.Dock = DockStyle.Fill;
+    this.MonsterActionPanel.FlowDirection = FlowDirection.LeftToRight;
+    this.MonsterActionPanel.Location = new Point(3, 93);
+    this.MonsterActionPanel.Margin = new Padding(3, 6, 3, 6);
+    this.MonsterActionPanel.Name = "MonsterActionPanel";
+    this.MonsterActionPanel.Padding = new Padding(12, 8, 12, 8);
+    this.MonsterActionPanel.Size = new Size(916, 44);
+    this.MonsterActionPanel.TabIndex = 1;
+    this.MonsterActionPanel.WrapContents = false;
+    this.MonsterSummaryLabel.AutoSize = true;
+    this.MonsterSummaryLabel.Font = new Font("Segoe UI", 9f, FontStyle.Bold, GraphicsUnit.Point, (byte) 0);
+    this.MonsterSummaryLabel.Margin = new Padding(0, 8, 20, 0);
+    this.MonsterSummaryLabel.Name = "MonsterSummaryLabel";
+    this.MonsterSummaryLabel.Size = new Size(86, 15);
+    this.MonsterSummaryLabel.TabIndex = 0;
+    this.MonsterSummaryLabel.Text = "Monsters: 0";
+    this.ButtonAddMonster.Location = new Point(0, 8);
+    this.ButtonAddMonster.Margin = new Padding(0, 8, 6, 0);
     this.ButtonAddMonster.Name = "ButtonAddMonster";
-    this.ButtonAddMonster.Size = new Size(120, 23);
-    this.ButtonAddMonster.TabIndex = 8;
+    this.ButtonAddMonster.Size = new Size(114, 28);
+    this.ButtonAddMonster.TabIndex = 1;
     this.ButtonAddMonster.Text = "Add Monster";
     this.ButtonAddMonster.UseVisualStyleBackColor = true;
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonAddMonster, "Insert a new monster at the bottom of the list.");
     this.ButtonDeleteMonster.Enabled = false;
-    this.ButtonDeleteMonster.Location = new Point(135, 106);
+    this.ButtonDeleteMonster.Location = new Point(120, 8);
+    this.ButtonDeleteMonster.Margin = new Padding(0, 8, 20, 0);
     this.ButtonDeleteMonster.Name = "ButtonDeleteMonster";
-    this.ButtonDeleteMonster.Size = new Size(120, 23);
-    this.ButtonDeleteMonster.TabIndex = 9;
+    this.ButtonDeleteMonster.Size = new Size(130, 28);
+    this.ButtonDeleteMonster.TabIndex = 2;
     this.ButtonDeleteMonster.Text = "Delete Selected";
     this.ButtonDeleteMonster.UseVisualStyleBackColor = true;
+    this.MonsterToolTip.SetToolTip((Control) this.ButtonDeleteMonster, "Remove the currently selected monster.");
+    this.MonsterSearchLabel.AutoSize = true;
+    this.MonsterSearchLabel.Margin = new Padding(0, 12, 6, 0);
+    this.MonsterSearchLabel.Name = "MonsterSearchLabel";
+    this.MonsterSearchLabel.Size = new Size(47, 13);
+    this.MonsterSearchLabel.TabIndex = 3;
+    this.MonsterSearchLabel.Text = "Search:";
+    this.MonsterSearchTextBox.Margin = new Padding(0, 8, 6, 0);
+    this.MonsterSearchTextBox.Name = "MonsterSearchTextBox";
+    this.MonsterSearchTextBox.Size = new Size(220, 20);
+    this.MonsterSearchTextBox.TabIndex = 4;
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterSearchTextBox, "Filter and highlight monsters by name or index.");
+    this.MonsterClearSearchButton.Location = new Point(403, 8);
+    this.MonsterClearSearchButton.Margin = new Padding(0, 8, 0, 0);
+    this.MonsterClearSearchButton.Name = "MonsterClearSearchButton";
+    this.MonsterClearSearchButton.Size = new Size(82, 28);
+    this.MonsterClearSearchButton.TabIndex = 5;
+    this.MonsterClearSearchButton.Text = "Clear";
+    this.MonsterClearSearchButton.UseVisualStyleBackColor = true;
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterClearSearchButton, "Clear the current search filter.");
     this.MonsterDataGridView.AllowUserToAddRows = true;
     this.MonsterDataGridView.AllowUserToDeleteRows = true;
+    this.MonsterDataGridView.AllowUserToOrderColumns = true;
     this.MonsterDataGridView.AllowUserToResizeRows = false;
-    this.MonsterDataGridView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
     this.MonsterDataGridView.AutoGenerateColumns = false;
     this.MonsterDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
     this.MonsterDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -1128,13 +1228,16 @@ public class Form1 : Form
       (DataGridViewColumn) this.MonsterIndexColumn,
       (DataGridViewColumn) this.MonsterNameColumn
     });
-    this.MonsterDataGridView.Location = new Point(9, 135);
+    this.MonsterDataGridView.Dock = DockStyle.Fill;
+    this.MonsterDataGridView.Location = new Point(3, 143);
+    this.MonsterDataGridView.Margin = new Padding(3, 0, 3, 3);
     this.MonsterDataGridView.MultiSelect = false;
     this.MonsterDataGridView.Name = "MonsterDataGridView";
     this.MonsterDataGridView.RowHeadersVisible = false;
     this.MonsterDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-    this.MonsterDataGridView.Size = new Size(910, 450);
-    this.MonsterDataGridView.TabIndex = 10;
+    this.MonsterDataGridView.Size = new Size(916, 445);
+    this.MonsterDataGridView.TabIndex = 2;
+    this.MonsterToolTip.SetToolTip((Control) this.MonsterDataGridView, "Edit monster attributes directly in the table below.");
     this.MonsterIndexColumn.DataPropertyName = "Index";
     this.MonsterIndexColumn.FillWeight = 20f;
     this.MonsterIndexColumn.HeaderText = "Index";
@@ -1146,6 +1249,22 @@ public class Form1 : Form
     this.MonsterNameColumn.HeaderText = "Name";
     this.MonsterNameColumn.Name = "MonsterNameColumn";
     this.MonsterNameColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+    this.MonsterTabLayoutPanel.ColumnCount = 1;
+    this.MonsterTabLayoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+    this.MonsterTabLayoutPanel.Controls.Add((Control) this.MonsterFileLayoutPanel, 0, 0);
+    this.MonsterTabLayoutPanel.Controls.Add((Control) this.MonsterActionPanel, 0, 1);
+    this.MonsterTabLayoutPanel.Controls.Add((Control) this.MonsterDataGridView, 0, 2);
+    this.MonsterTabLayoutPanel.Dock = DockStyle.Fill;
+    this.MonsterTabLayoutPanel.Location = new Point(3, 3);
+    this.MonsterTabLayoutPanel.Name = "MonsterTabLayoutPanel";
+    this.MonsterTabLayoutPanel.RowCount = 3;
+    this.MonsterTabLayoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+    this.MonsterTabLayoutPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+    this.MonsterTabLayoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+    this.MonsterTabLayoutPanel.Size = new Size(922, 585);
+    this.MonsterTabLayoutPanel.TabIndex = 0;
+    this.TabPage2.Controls.Add((Control) this.MonsterTabLayoutPanel);
+    this.TabPage2.BackColor = Color.White;
     TabPage tabPage2_1 = this.TabPage2;
     point1 = new Point(4, 22);
     Point point49 = point1;
@@ -1188,10 +1307,15 @@ public class Form1 : Form
     this.GroupBox4.ResumeLayout(false);
     this.GroupBox4.PerformLayout();
     this.TabControl1.ResumeLayout(false);
+    this.MonsterActionPanel.ResumeLayout(false);
+    this.MonsterActionPanel.PerformLayout();
+    this.MonsterFileLayoutPanel.ResumeLayout(false);
+    this.MonsterFileLayoutPanel.PerformLayout();
+    this.MonsterTabLayoutPanel.ResumeLayout(false);
+    this.MonsterTabLayoutPanel.PerformLayout();
     ((ISupportInitialize) this.MonsterDataGridView).EndInit();
     this.TabPage1.ResumeLayout(false);
     this.TabPage2.ResumeLayout(false);
-    this.TabPage2.PerformLayout();
     this.GroupBox5.ResumeLayout(false);
     this.GroupBox5.PerformLayout();
     this.ResumeLayout(false);
@@ -1555,6 +1679,72 @@ public class Form1 : Form
         return;
       this._ButtonSaveMonsterTxt.Click += eventHandler;
     }
+  }
+
+  internal virtual TableLayoutPanel MonsterTabLayoutPanel
+  {
+    [DebuggerNonUserCode] get => this._MonsterTabLayoutPanel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterTabLayoutPanel = value;
+  }
+
+  internal virtual TableLayoutPanel MonsterFileLayoutPanel
+  {
+    [DebuggerNonUserCode] get => this._MonsterFileLayoutPanel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterFileLayoutPanel = value;
+  }
+
+  internal virtual FlowLayoutPanel MonsterActionPanel
+  {
+    [DebuggerNonUserCode] get => this._MonsterActionPanel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterActionPanel = value;
+  }
+
+  internal virtual Label MonsterSummaryLabel
+  {
+    [DebuggerNonUserCode] get => this._MonsterSummaryLabel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterSummaryLabel = value;
+  }
+
+  internal virtual Label MonsterSearchLabel
+  {
+    [DebuggerNonUserCode] get => this._MonsterSearchLabel;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterSearchLabel = value;
+  }
+
+  internal virtual TextBox MonsterSearchTextBox
+  {
+    [DebuggerNonUserCode] get => this._MonsterSearchTextBox;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      EventHandler eventHandler = new EventHandler(this.MonsterSearchTextBox_TextChanged);
+      if (this._MonsterSearchTextBox != null)
+        this._MonsterSearchTextBox.TextChanged -= eventHandler;
+      this._MonsterSearchTextBox = value;
+      if (this._MonsterSearchTextBox == null)
+        return;
+      this._MonsterSearchTextBox.TextChanged += eventHandler;
+    }
+  }
+
+  internal virtual Button MonsterClearSearchButton
+  {
+    [DebuggerNonUserCode] get => this._MonsterClearSearchButton;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set
+    {
+      EventHandler eventHandler = new EventHandler(this.MonsterClearSearchButton_Click);
+      if (this._MonsterClearSearchButton != null)
+        this._MonsterClearSearchButton.Click -= eventHandler;
+      this._MonsterClearSearchButton = value;
+      if (this._MonsterClearSearchButton == null)
+        return;
+      this._MonsterClearSearchButton.Click += eventHandler;
+    }
+  }
+
+  internal virtual ToolTip MonsterToolTip
+  {
+    [DebuggerNonUserCode] get => this._MonsterToolTip;
+    [DebuggerNonUserCode, MethodImpl(MethodImplOptions.Synchronized)] set => this._MonsterToolTip = value;
   }
 
   internal virtual Button ButtonAddMonster
@@ -3066,10 +3256,218 @@ public class Form1 : Form
     if (this.MonsterDataGridView != null)
     {
       this.MonsterDataGridView.AutoGenerateColumns = false;
+      this.SetupMonsterGridColumns();
+      this.ConfigureMonsterGridAppearance();
       this.MonsterDataGridView.DataSource = (object) this.monsterDefinitions;
     }
     this.UpdateMonsterSelectionList();
     this.UpdateMonsterActionButtons();
+    this.UpdateMonsterSummary();
+  }
+
+  private void SetupMonsterGridColumns()
+  {
+    if (this.MonsterDataGridView == null)
+      return;
+    this.MonsterDataGridView.Columns.Clear();
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Index", "Index", 60f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Name", "Name", 150f, false));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("ExpType", "Exp Type", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Level", "Level", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("HP", "HP", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MP", "MP", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("DamageMin", "Damage Min", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("DamageMax", "Damage Max", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Defense", "Defense", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MagicDefense", "Magic Defense", 90f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("AttackRate", "Attack Rate", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("BlockRate", "Block Rate", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MoveRange", "Move Range", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("AttackType", "Attack Type", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("AttackRange", "Attack Range", 90f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("ViewRange", "View Range", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MoveSpeed", "Move Speed", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("AttackSpeed", "Attack Speed", 90f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("RegenTime", "Regen Time", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Attribute", "Attribute", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("ItemDropRate", "Item Drop Rate", 100f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MoneyDropRate", "Money Drop Rate", 110f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MaxItemLevel", "Max Item Level", 100f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MonsterSkill", "Monster Skill", 90f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("IceRes", "Ice Res", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PoisonRes", "Poison Res", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("LightRes", "Light Res", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("FireRes", "Fire Res", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramMainAttrib", "Pentagram Main Attrib", 140f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramAttribPattern", "Pentagram Attrib Pattern", 160f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramDamageMin", "Pentagram Damage Min", 150f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramDamageMax", "Pentagram Damage Max", 150f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramAttackRate", "Pentagram Attack Rate", 150f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramDefenseRate", "Pentagram Defense Rate", 160f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramDefense", "Pentagram Defense", 140f, true));
+  }
+
+  private void ConfigureMonsterGridAppearance()
+  {
+    if (this.MonsterDataGridView == null)
+      return;
+    this.MonsterDataGridView.EnableHeadersVisualStyles = false;
+    this.MonsterDataGridView.BackgroundColor = Color.White;
+    this.MonsterDataGridView.BorderStyle = BorderStyle.FixedSingle;
+    this.MonsterDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+    this.MonsterDataGridView.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+    this.MonsterDataGridView.ColumnHeadersHeight = 36;
+    this.MonsterDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+    this.MonsterDataGridView.EditMode = DataGridViewEditMode.EditOnEnter;
+    this.MonsterDataGridView.GridColor = Color.FromArgb(220, 223, 226);
+    this.MonsterDataGridView.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+    this.MonsterDataGridView.RowTemplate.Height = 26;
+    this.MonsterDataGridView.ScrollBars = ScrollBars.Both;
+    DataGridViewCellStyle columnHeadersDefaultCellStyle = new DataGridViewCellStyle();
+    columnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+    columnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 57, 83);
+    columnHeadersDefaultCellStyle.ForeColor = Color.White;
+    columnHeadersDefaultCellStyle.SelectionBackColor = Color.FromArgb(82, 109, 130);
+    columnHeadersDefaultCellStyle.SelectionForeColor = Color.White;
+    columnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+    columnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9f, FontStyle.Bold, GraphicsUnit.Point, (byte) 0);
+    this.MonsterDataGridView.ColumnHeadersDefaultCellStyle = columnHeadersDefaultCellStyle;
+    DataGridViewCellStyle defaultCellStyle = new DataGridViewCellStyle();
+    defaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+    defaultCellStyle.BackColor = Color.White;
+    defaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
+    defaultCellStyle.SelectionBackColor = Color.FromArgb(51, 153, 255);
+    defaultCellStyle.SelectionForeColor = Color.White;
+    defaultCellStyle.Padding = new Padding(2);
+    defaultCellStyle.WrapMode = DataGridViewTriState.False;
+    this.MonsterDataGridView.DefaultCellStyle = defaultCellStyle;
+    DataGridViewCellStyle alternatingRowsDefaultCellStyle = new DataGridViewCellStyle();
+    alternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(246, 249, 252);
+    this.MonsterDataGridView.AlternatingRowsDefaultCellStyle = alternatingRowsDefaultCellStyle;
+  }
+
+  private DataGridViewTextBoxColumn CreateMonsterColumn(string dataPropertyName, string headerText, float fillWeight, bool isNumeric)
+  {
+    DataGridViewTextBoxColumn textBoxColumn = new DataGridViewTextBoxColumn();
+    textBoxColumn.DataPropertyName = dataPropertyName;
+    textBoxColumn.HeaderText = headerText;
+    textBoxColumn.Name = dataPropertyName + "Column";
+    textBoxColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+    textBoxColumn.FillWeight = fillWeight;
+    if (isNumeric)
+    {
+      textBoxColumn.ValueType = typeof (int);
+      textBoxColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+    }
+    else
+      textBoxColumn.ValueType = typeof (string);
+    return textBoxColumn;
+  }
+
+  private void UpdateMonsterSummary()
+  {
+    if (this.MonsterSummaryLabel == null)
+      return;
+    int count = this.monsterDefinitions != null ? this.monsterDefinitions.Count : 0;
+    string str = string.Format((IFormatProvider) CultureInfo.InvariantCulture, "Monsters: {0}", count.ToString((IFormatProvider) CultureInfo.InvariantCulture));
+    if (this.MonsterDataGridView != null && this.MonsterDataGridView.CurrentRow != null && !this.MonsterDataGridView.CurrentRow.IsNewRow)
+    {
+      object indexValue = (object) null;
+      object nameValue = (object) null;
+      if (this.MonsterDataGridView.Columns.Contains("NameColumn"))
+        nameValue = this.MonsterDataGridView.CurrentRow.Cells["NameColumn"].Value;
+      else if (this.MonsterDataGridView.Columns.Contains("MonsterNameColumn"))
+        nameValue = this.MonsterDataGridView.CurrentRow.Cells["MonsterNameColumn"].Value;
+      if (this.MonsterDataGridView.Columns.Contains("IndexColumn"))
+        indexValue = this.MonsterDataGridView.CurrentRow.Cells["IndexColumn"].Value;
+      else if (this.MonsterDataGridView.Columns.Contains("MonsterIndexColumn"))
+        indexValue = this.MonsterDataGridView.CurrentRow.Cells["MonsterIndexColumn"].Value;
+      string selectedInfo = string.Empty;
+      if (nameValue != null && !Form1.IsStringNullOrWhiteSpace(nameValue.ToString()))
+        selectedInfo = nameValue.ToString();
+      else if (indexValue != null)
+        selectedInfo = "#" + Conversions.ToString(indexValue);
+      if (!string.IsNullOrEmpty(selectedInfo))
+        str = str + " – Selected: " + selectedInfo;
+    }
+    this.MonsterSummaryLabel.Text = str;
+  }
+
+  private void HighlightMonsterSearch(string searchText)
+  {
+    if (this.MonsterDataGridView == null)
+      return;
+    if (Form1.IsStringNullOrWhiteSpace(searchText))
+    {
+      this.MonsterDataGridView.ClearSelection();
+      this.UpdateMonsterActionButtons();
+      this.UpdateMonsterSummary();
+      return;
+    }
+    string str = searchText.Trim();
+    DataGridViewRow targetRow = (DataGridViewRow) null;
+    foreach (DataGridViewRow row in (IEnumerable) this.MonsterDataGridView.Rows)
+    {
+      if (!row.IsNewRow)
+      {
+        object nameValue = (object) null;
+        object indexValue = (object) null;
+        if (this.MonsterDataGridView.Columns.Contains("NameColumn"))
+          nameValue = row.Cells["NameColumn"].Value;
+        else if (this.MonsterDataGridView.Columns.Contains("MonsterNameColumn"))
+          nameValue = row.Cells["MonsterNameColumn"].Value;
+        if (this.MonsterDataGridView.Columns.Contains("IndexColumn"))
+          indexValue = row.Cells["IndexColumn"].Value;
+        else if (this.MonsterDataGridView.Columns.Contains("MonsterIndexColumn"))
+          indexValue = row.Cells["MonsterIndexColumn"].Value;
+        if (nameValue != null && nameValue.ToString().IndexOf(str, StringComparison.OrdinalIgnoreCase) >= 0 || indexValue != null && indexValue.ToString().IndexOf(str, StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+          targetRow = row;
+          break;
+        }
+      }
+    }
+    this.MonsterDataGridView.ClearSelection();
+    if (targetRow != null)
+    {
+      targetRow.Selected = true;
+      if (targetRow.Cells.Count > 0)
+        this.MonsterDataGridView.CurrentCell = targetRow.Cells[0];
+      try
+      {
+        if (targetRow.Index >= 0 && targetRow.Index < this.MonsterDataGridView.RowCount)
+          this.MonsterDataGridView.FirstDisplayedScrollingRowIndex = targetRow.Index;
+      }
+      catch (InvalidOperationException ex)
+      {
+      }
+    }
+    this.UpdateMonsterActionButtons();
+    this.UpdateMonsterSummary();
+  }
+
+  private void MonsterSearchTextBox_TextChanged(object sender, EventArgs e)
+  {
+    if (this.isLoadingMonsterDefinitions)
+      return;
+    string searchText = this.MonsterSearchTextBox != null ? this.MonsterSearchTextBox.Text : string.Empty;
+    this.HighlightMonsterSearch(searchText);
+  }
+
+  private void MonsterClearSearchButton_Click(object sender, EventArgs e)
+  {
+    if (this.MonsterSearchTextBox == null)
+    {
+      this.HighlightMonsterSearch(string.Empty);
+    }
+    else
+    {
+      if (this.MonsterSearchTextBox.TextLength > 0)
+        this.MonsterSearchTextBox.Clear();
+      else
+        this.HighlightMonsterSearch(string.Empty);
+      this.MonsterSearchTextBox.Focus();
+    }
   }
 
   private void SetMonsterDefinitions(IEnumerable<MonsterDefinition> definitions)
@@ -3085,6 +3483,39 @@ public class Form1 : Form
           MonsterDefinition monsterDefinition = new MonsterDefinition();
           monsterDefinition.Index = definition.Index;
           monsterDefinition.Name = definition.Name ?? string.Empty;
+          monsterDefinition.ExpType = definition.ExpType;
+          monsterDefinition.Level = definition.Level;
+          monsterDefinition.HP = definition.HP;
+          monsterDefinition.MP = definition.MP;
+          monsterDefinition.DamageMin = definition.DamageMin;
+          monsterDefinition.DamageMax = definition.DamageMax;
+          monsterDefinition.Defense = definition.Defense;
+          monsterDefinition.MagicDefense = definition.MagicDefense;
+          monsterDefinition.AttackRate = definition.AttackRate;
+          monsterDefinition.BlockRate = definition.BlockRate;
+          monsterDefinition.MoveRange = definition.MoveRange;
+          monsterDefinition.AttackType = definition.AttackType;
+          monsterDefinition.AttackRange = definition.AttackRange;
+          monsterDefinition.ViewRange = definition.ViewRange;
+          monsterDefinition.MoveSpeed = definition.MoveSpeed;
+          monsterDefinition.AttackSpeed = definition.AttackSpeed;
+          monsterDefinition.RegenTime = definition.RegenTime;
+          monsterDefinition.Attribute = definition.Attribute;
+          monsterDefinition.ItemDropRate = definition.ItemDropRate;
+          monsterDefinition.MoneyDropRate = definition.MoneyDropRate;
+          monsterDefinition.MaxItemLevel = definition.MaxItemLevel;
+          monsterDefinition.MonsterSkill = definition.MonsterSkill;
+          monsterDefinition.IceRes = definition.IceRes;
+          monsterDefinition.PoisonRes = definition.PoisonRes;
+          monsterDefinition.LightRes = definition.LightRes;
+          monsterDefinition.FireRes = definition.FireRes;
+          monsterDefinition.PentagramMainAttrib = definition.PentagramMainAttrib;
+          monsterDefinition.PentagramAttribPattern = definition.PentagramAttribPattern;
+          monsterDefinition.PentagramDamageMin = definition.PentagramDamageMin;
+          monsterDefinition.PentagramDamageMax = definition.PentagramDamageMax;
+          monsterDefinition.PentagramAttackRate = definition.PentagramAttackRate;
+          monsterDefinition.PentagramDefenseRate = definition.PentagramDefenseRate;
+          monsterDefinition.PentagramDefense = definition.PentagramDefense;
           this.monsterDefinitions.Add(monsterDefinition);
         }
       }
@@ -3095,6 +3526,8 @@ public class Form1 : Form
     }
     this.UpdateMonsterSelectionList();
     this.UpdateMonsterActionButtons();
+    this.UpdateMonsterSummary();
+    this.HighlightMonsterSearch(this.MonsterSearchTextBox != null ? this.MonsterSearchTextBox.Text : string.Empty);
   }
 
   private void MonsterDefinitions_ListChanged(object sender, ListChangedEventArgs e)
@@ -3103,6 +3536,8 @@ public class Form1 : Form
       return;
     this.UpdateMonsterSelectionList();
     this.UpdateMonsterActionButtons();
+    this.UpdateMonsterSummary();
+    this.HighlightMonsterSearch(this.MonsterSearchTextBox != null ? this.MonsterSearchTextBox.Text : string.Empty);
   }
 
   private void UpdateMonsterSelectionList()
@@ -3195,6 +3630,22 @@ public class Form1 : Form
       else
         this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = string.Empty;
     }
+    else
+    {
+      DataGridViewColumn column = this.MonsterDataGridView.Columns[e.ColumnIndex];
+      if (column != null && column.ValueType == typeof (int))
+      {
+        int result;
+        if (!int.TryParse(Conversions.ToString(e.FormattedValue), NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture, out result))
+        {
+          string str = !string.IsNullOrEmpty(column.HeaderText) ? column.HeaderText : dataPropertyName;
+          this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = str + " must be a numeric value.";
+          e.Cancel = true;
+        }
+        else
+          this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = string.Empty;
+      }
+    }
   }
 
   private void MonsterDataGridView_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -3212,7 +3663,11 @@ public class Form1 : Form
     e.Cancel = true;
   }
 
-  private void MonsterDataGridView_SelectionChanged(object sender, EventArgs e) => this.UpdateMonsterActionButtons();
+  private void MonsterDataGridView_SelectionChanged(object sender, EventArgs e)
+  {
+    this.UpdateMonsterActionButtons();
+    this.UpdateMonsterSummary();
+  }
 
   private void ButtonLoadMonsterXml_Click(object sender, EventArgs e)
   {
@@ -3461,7 +3916,40 @@ public class Form1 : Form
     return this.monsterDefinitions.OrderBy<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)).Select<MonsterDefinition, MonsterDefinition>((Func<MonsterDefinition, MonsterDefinition>) (m => new MonsterDefinition()
     {
       Index = m.Index,
-      Name = m.Name ?? string.Empty
+      Name = m.Name ?? string.Empty,
+      ExpType = m.ExpType,
+      Level = m.Level,
+      HP = m.HP,
+      MP = m.MP,
+      DamageMin = m.DamageMin,
+      DamageMax = m.DamageMax,
+      Defense = m.Defense,
+      MagicDefense = m.MagicDefense,
+      AttackRate = m.AttackRate,
+      BlockRate = m.BlockRate,
+      MoveRange = m.MoveRange,
+      AttackType = m.AttackType,
+      AttackRange = m.AttackRange,
+      ViewRange = m.ViewRange,
+      MoveSpeed = m.MoveSpeed,
+      AttackSpeed = m.AttackSpeed,
+      RegenTime = m.RegenTime,
+      Attribute = m.Attribute,
+      ItemDropRate = m.ItemDropRate,
+      MoneyDropRate = m.MoneyDropRate,
+      MaxItemLevel = m.MaxItemLevel,
+      MonsterSkill = m.MonsterSkill,
+      IceRes = m.IceRes,
+      PoisonRes = m.PoisonRes,
+      LightRes = m.LightRes,
+      FireRes = m.FireRes,
+      PentagramMainAttrib = m.PentagramMainAttrib,
+      PentagramAttribPattern = m.PentagramAttribPattern,
+      PentagramDamageMin = m.PentagramDamageMin,
+      PentagramDamageMax = m.PentagramDamageMax,
+      PentagramAttackRate = m.PentagramAttackRate,
+      PentagramDefenseRate = m.PentagramDefenseRate,
+      PentagramDefense = m.PentagramDefense
     }));
   }
 
