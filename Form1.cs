@@ -1769,7 +1769,8 @@ public class Form1 : Form
         this.Inizio = (object) 1;
       }
       this.colore = (object) Color.Red;
-      this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "0"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.Dir), (object) "\t"), (object) "// "), this.NameMonster));
+      string spawnLine1 = BuildSpawnLine(RuntimeHelpers.GetObjectValue(this.Monster), RuntimeHelpers.GetObjectValue(this.MapNumber), (object) "0", RuntimeHelpers.GetObjectValue(this.CordX), RuntimeHelpers.GetObjectValue(this.CordY), RuntimeHelpers.GetObjectValue(this.Dir), (object) ("// " + Conversions.ToString(RuntimeHelpers.GetObjectValue(this.NameMonster))));
+      this.ListBox1.Items.Add((object) spawnLine1);
     }
     else if (Operators.ConditionalCompareObjectEqual(this.ComboBox2.SelectedItem, (object) "1 - Spots", false))
     {
@@ -1796,7 +1797,8 @@ public class Form1 : Form
         this.Inizio = (object) 1;
       }
       this.colore = (object) Color.Green;
-      this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.Dir), (object) "\t"), (object) "// "), this.NameMonster));
+      string spawnLine2 = BuildSpawnLine(RuntimeHelpers.GetObjectValue(this.Monster), RuntimeHelpers.GetObjectValue(this.MapNumber), (object) "30", RuntimeHelpers.GetObjectValue(this.CordX), RuntimeHelpers.GetObjectValue(this.CordY), RuntimeHelpers.GetObjectValue(this.Dir), (object) ("// " + Conversions.ToString(RuntimeHelpers.GetObjectValue(this.NameMonster))));
+      this.ListBox1.Items.Add((object) spawnLine2);
     }
     else if (Operators.ConditionalCompareObjectEqual(this.ComboBox2.SelectedItem, (object) "3 - Bone King / Golden Monsters", false))
     {
@@ -1811,7 +1813,10 @@ public class Form1 : Form
       }
       this.colore = (object) Color.DarkGoldenrod;
       if (!this.IsAreaSpotMode())
-        this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.CordX_spot), (object) "\t"), this.CordY_spot), (object) "\t"), (object) "-1"), (object) "\t"), this.Quant), (object) "\t"), (object) "// "), this.NameMonster));
+      {
+        string spawnLine3 = BuildSpawnLine(RuntimeHelpers.GetObjectValue(this.Monster), RuntimeHelpers.GetObjectValue(this.MapNumber), (object) "30", RuntimeHelpers.GetObjectValue(this.CordX), RuntimeHelpers.GetObjectValue(this.CordY), RuntimeHelpers.GetObjectValue(this.CordX_spot), RuntimeHelpers.GetObjectValue(this.CordY_spot), (object) "-1", RuntimeHelpers.GetObjectValue(this.Quant), (object) ("// " + Conversions.ToString(RuntimeHelpers.GetObjectValue(this.NameMonster))));
+        this.ListBox1.Items.Add((object) spawnLine3);
+      }
     }
     else
     {
@@ -1819,15 +1824,16 @@ public class Form1 : Form
         return;
       if (Operators.ConditionalCompareObjectEqual(this.Inizio, (object) 0, false))
       {
-        this.ListBox1.Items.Add((object) "//=========================================================================================");
+        this.ListBox1.Items.Add((object) "//=====================================================================================");
         this.ListBox1.Items.Add((object) $"//\t{this.GroupBox1.Text} Blood Castle Monsters / Gate");
-        this.ListBox1.Items.Add((object) "//=========================================================================================");
+        this.ListBox1.Items.Add((object) "//=====================================================================================");
         this.ListBox1.Items.Add((object) "//Mob\tMap\tRad\tX\tY\tStr\tName");
         this.ListBox1.Items.Add((object) "4");
         this.Inizio = (object) 1;
       }
       this.colore = (object) Color.Blue;
-      this.ListBox1.Items.Add(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(Operators.ConcatenateObject(this.Monster, (object) "\t"), this.MapNumber), (object) "\t"), (object) "30"), (object) "\t"), this.CordX), (object) "\t"), this.CordY), (object) "\t"), this.Dir), (object) "\t"), (object) "// "), this.NameMonster));
+      string spawnLine4 = BuildSpawnLine(RuntimeHelpers.GetObjectValue(this.Monster), RuntimeHelpers.GetObjectValue(this.MapNumber), (object) "30", RuntimeHelpers.GetObjectValue(this.CordX), RuntimeHelpers.GetObjectValue(this.CordY), RuntimeHelpers.GetObjectValue(this.Dir), (object) ("// " + Conversions.ToString(RuntimeHelpers.GetObjectValue(this.NameMonster))));
+      this.ListBox1.Items.Add((object) spawnLine4);
     }
   }
 
@@ -2574,6 +2580,16 @@ public class Form1 : Form
     if (type == 3)
       return "//Mob\tMap\tRadio\tCordX\tCordY\tCordX2\tCordY2\tDir \tQuant\tElement\tName";
     return "//Mob\tMap\tRad\tX\tY\tStr\tName";
+  }
+
+  private static string BuildSpawnLine(params object[] values)
+  {
+    if (values == null || values.Length == 0)
+      return string.Empty;
+    string[] parts = new string[values.Length];
+    for (int index = 0; index < values.Length; ++index)
+      parts[index] = values[index] != null ? Conversions.ToString(values[index]) : string.Empty;
+    return string.Join("\t", parts);
   }
 
   private string FormatSpawnListEntry(MonsterMap map, MonsterSpot spot, MonsterSpawnEntry spawn)
