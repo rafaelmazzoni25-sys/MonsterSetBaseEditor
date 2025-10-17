@@ -3187,7 +3187,7 @@ public class Form1 : Form
     else if (string.Equals(dataPropertyName, "Name", StringComparison.Ordinal))
     {
       string str = e.FormattedValue != null ? e.FormattedValue.ToString() : string.Empty;
-      if (string.IsNullOrWhiteSpace(str))
+      if (Form1.IsStringNullOrWhiteSpace(str))
       {
         this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = "Name cannot be empty.";
         e.Cancel = true;
@@ -3402,7 +3402,7 @@ public class Form1 : Form
         while (!streamReader.EndOfStream)
         {
           string str = streamReader.ReadLine();
-          if (!string.IsNullOrWhiteSpace(str))
+          if (!Form1.IsStringNullOrWhiteSpace(str))
           {
             string[] strArray = str.Split(new char[2]{ ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
             int result;
@@ -3410,7 +3410,7 @@ public class Form1 : Form
             {
               MonsterDefinition monsterDefinition = new MonsterDefinition();
               monsterDefinition.Index = result;
-              monsterDefinition.Name = string.Join(" ", ((IEnumerable<string>) strArray).Skip<string>(1));
+              monsterDefinition.Name = string.Join(" ", ((IEnumerable<string>) strArray).Skip<string>(1).ToArray());
               monsterDefinitionList.Add(monsterDefinition);
             }
           }
@@ -3493,11 +3493,23 @@ public class Form1 : Form
         errorMessage = "Duplicate monster index: " + monsterDefinition.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + ".";
         return false;
       }
-      if (string.IsNullOrWhiteSpace(monsterDefinition.Name))
+      if (Form1.IsStringNullOrWhiteSpace(monsterDefinition.Name))
       {
         errorMessage = "Monster name cannot be empty for index " + monsterDefinition.Index.ToString((IFormatProvider) CultureInfo.InvariantCulture) + ".";
         return false;
       }
+    }
+    return true;
+  }
+
+  private static bool IsStringNullOrWhiteSpace(string value)
+  {
+    if (value == null)
+      return true;
+    for (int index = 0; index < value.Length; ++index)
+    {
+      if (!char.IsWhiteSpace(value[index]))
+        return false;
     }
     return true;
   }
