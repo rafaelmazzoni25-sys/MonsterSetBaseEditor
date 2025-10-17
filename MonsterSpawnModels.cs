@@ -225,5 +225,104 @@ namespace MonasterSetBase
 
         [XmlAttribute("Name")]
         public string Name { get; set; }
+
+        [XmlAttribute("ExpType")]
+        public int ExpType { get; set; }
+
+        [XmlAttribute("Level")]
+        public int Level { get; set; }
+
+        [XmlAttribute("HP")]
+        public int HP { get; set; }
+
+        [XmlAttribute("MP")]
+        public int MP { get; set; }
+
+        [XmlAttribute("DamageMin")]
+        public int DamageMin { get; set; }
+
+        [XmlAttribute("DamageMax")]
+        public int DamageMax { get; set; }
+
+        [XmlAttribute("Defense")]
+        public int Defense { get; set; }
+
+        [XmlAttribute("MagicDefense")]
+        public int MagicDefense { get; set; }
+
+        [XmlAttribute("AttackRate")]
+        public int AttackRate { get; set; }
+
+        [XmlAttribute("BlockRate")]
+        public int BlockRate { get; set; }
+
+        [XmlAttribute("MoveRange")]
+        public int MoveRange { get; set; }
+
+        [XmlAttribute("AttackType")]
+        public int AttackType { get; set; }
+
+        [XmlAttribute("AttackRange")]
+        public int AttackRange { get; set; }
+
+        [XmlAttribute("ViewRange")]
+        public int ViewRange { get; set; }
+
+        [XmlAttribute("MoveSpeed")]
+        public int MoveSpeed { get; set; }
+
+        [XmlAttribute("AttackSpeed")]
+        public int AttackSpeed { get; set; }
+
+        [XmlAttribute("RegenTime")]
+        public int RegenTime { get; set; }
+
+        [XmlAttribute("Attribute")]
+        public int Attribute { get; set; }
+
+        [XmlAttribute("ItemDropRate")]
+        public int ItemDropRate { get; set; }
+
+        [XmlAttribute("MoneyDropRate")]
+        public int MoneyDropRate { get; set; }
+
+        [XmlAttribute("MaxItemLevel")]
+        public int MaxItemLevel { get; set; }
+
+        [XmlAttribute("MonsterSkill")]
+        public int MonsterSkill { get; set; }
+
+        [XmlAttribute("IceRes")]
+        public int IceRes { get; set; }
+
+        [XmlAttribute("PoisonRes")]
+        public int PoisonRes { get; set; }
+
+        [XmlAttribute("LightRes")]
+        public int LightRes { get; set; }
+
+        [XmlAttribute("FireRes")]
+        public int FireRes { get; set; }
+
+        [XmlAttribute("PentagramMainAttrib")]
+        public int PentagramMainAttrib { get; set; }
+
+        [XmlAttribute("PentagramAttribPattern")]
+        public int PentagramAttribPattern { get; set; }
+
+        [XmlAttribute("PentagramDamageMin")]
+        public int PentagramDamageMin { get; set; }
+
+        [XmlAttribute("PentagramDamageMax")]
+        public int PentagramDamageMax { get; set; }
+
+        [XmlAttribute("PentagramAttackRate")]
+        public int PentagramAttackRate { get; set; }
+
+        [XmlAttribute("PentagramDefenseRate")]
+        public int PentagramDefenseRate { get; set; }
+
+        [XmlAttribute("PentagramDefense")]
+        public int PentagramDefense { get; set; }
     }
 }

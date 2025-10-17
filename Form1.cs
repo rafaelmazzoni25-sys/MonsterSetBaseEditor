@@ -3066,10 +3066,71 @@ public class Form1 : Form
     if (this.MonsterDataGridView != null)
     {
       this.MonsterDataGridView.AutoGenerateColumns = false;
+      this.SetupMonsterGridColumns();
       this.MonsterDataGridView.DataSource = (object) this.monsterDefinitions;
     }
     this.UpdateMonsterSelectionList();
     this.UpdateMonsterActionButtons();
+  }
+
+  private void SetupMonsterGridColumns()
+  {
+    if (this.MonsterDataGridView == null)
+      return;
+    this.MonsterDataGridView.Columns.Clear();
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Index", "Index", 60f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Name", "Name", 150f, false));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("ExpType", "Exp Type", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Level", "Level", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("HP", "HP", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MP", "MP", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("DamageMin", "Damage Min", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("DamageMax", "Damage Max", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Defense", "Defense", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MagicDefense", "Magic Defense", 90f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("AttackRate", "Attack Rate", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("BlockRate", "Block Rate", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MoveRange", "Move Range", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("AttackType", "Attack Type", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("AttackRange", "Attack Range", 90f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("ViewRange", "View Range", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MoveSpeed", "Move Speed", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("AttackSpeed", "Attack Speed", 90f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("RegenTime", "Regen Time", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("Attribute", "Attribute", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("ItemDropRate", "Item Drop Rate", 100f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MoneyDropRate", "Money Drop Rate", 110f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MaxItemLevel", "Max Item Level", 100f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("MonsterSkill", "Monster Skill", 90f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("IceRes", "Ice Res", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PoisonRes", "Poison Res", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("LightRes", "Light Res", 80f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("FireRes", "Fire Res", 70f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramMainAttrib", "Pentagram Main Attrib", 140f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramAttribPattern", "Pentagram Attrib Pattern", 160f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramDamageMin", "Pentagram Damage Min", 150f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramDamageMax", "Pentagram Damage Max", 150f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramAttackRate", "Pentagram Attack Rate", 150f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramDefenseRate", "Pentagram Defense Rate", 160f, true));
+    this.MonsterDataGridView.Columns.Add(this.CreateMonsterColumn("PentagramDefense", "Pentagram Defense", 140f, true));
+  }
+
+  private DataGridViewTextBoxColumn CreateMonsterColumn(string dataPropertyName, string headerText, float fillWeight, bool isNumeric)
+  {
+    DataGridViewTextBoxColumn textBoxColumn = new DataGridViewTextBoxColumn();
+    textBoxColumn.DataPropertyName = dataPropertyName;
+    textBoxColumn.HeaderText = headerText;
+    textBoxColumn.Name = dataPropertyName + "Column";
+    textBoxColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+    textBoxColumn.FillWeight = fillWeight;
+    if (isNumeric)
+    {
+      textBoxColumn.ValueType = typeof (int);
+      textBoxColumn.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+    }
+    else
+      textBoxColumn.ValueType = typeof (string);
+    return textBoxColumn;
   }
 
   private void SetMonsterDefinitions(IEnumerable<MonsterDefinition> definitions)
@@ -3085,6 +3146,39 @@ public class Form1 : Form
           MonsterDefinition monsterDefinition = new MonsterDefinition();
           monsterDefinition.Index = definition.Index;
           monsterDefinition.Name = definition.Name ?? string.Empty;
+          monsterDefinition.ExpType = definition.ExpType;
+          monsterDefinition.Level = definition.Level;
+          monsterDefinition.HP = definition.HP;
+          monsterDefinition.MP = definition.MP;
+          monsterDefinition.DamageMin = definition.DamageMin;
+          monsterDefinition.DamageMax = definition.DamageMax;
+          monsterDefinition.Defense = definition.Defense;
+          monsterDefinition.MagicDefense = definition.MagicDefense;
+          monsterDefinition.AttackRate = definition.AttackRate;
+          monsterDefinition.BlockRate = definition.BlockRate;
+          monsterDefinition.MoveRange = definition.MoveRange;
+          monsterDefinition.AttackType = definition.AttackType;
+          monsterDefinition.AttackRange = definition.AttackRange;
+          monsterDefinition.ViewRange = definition.ViewRange;
+          monsterDefinition.MoveSpeed = definition.MoveSpeed;
+          monsterDefinition.AttackSpeed = definition.AttackSpeed;
+          monsterDefinition.RegenTime = definition.RegenTime;
+          monsterDefinition.Attribute = definition.Attribute;
+          monsterDefinition.ItemDropRate = definition.ItemDropRate;
+          monsterDefinition.MoneyDropRate = definition.MoneyDropRate;
+          monsterDefinition.MaxItemLevel = definition.MaxItemLevel;
+          monsterDefinition.MonsterSkill = definition.MonsterSkill;
+          monsterDefinition.IceRes = definition.IceRes;
+          monsterDefinition.PoisonRes = definition.PoisonRes;
+          monsterDefinition.LightRes = definition.LightRes;
+          monsterDefinition.FireRes = definition.FireRes;
+          monsterDefinition.PentagramMainAttrib = definition.PentagramMainAttrib;
+          monsterDefinition.PentagramAttribPattern = definition.PentagramAttribPattern;
+          monsterDefinition.PentagramDamageMin = definition.PentagramDamageMin;
+          monsterDefinition.PentagramDamageMax = definition.PentagramDamageMax;
+          monsterDefinition.PentagramAttackRate = definition.PentagramAttackRate;
+          monsterDefinition.PentagramDefenseRate = definition.PentagramDefenseRate;
+          monsterDefinition.PentagramDefense = definition.PentagramDefense;
           this.monsterDefinitions.Add(monsterDefinition);
         }
       }
@@ -3194,6 +3288,22 @@ public class Form1 : Form
       }
       else
         this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = string.Empty;
+    }
+    else
+    {
+      DataGridViewColumn column = this.MonsterDataGridView.Columns[e.ColumnIndex];
+      if (column != null && column.ValueType == typeof (int))
+      {
+        int result;
+        if (!int.TryParse(Conversions.ToString(e.FormattedValue), NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture, out result))
+        {
+          string str = !string.IsNullOrEmpty(column.HeaderText) ? column.HeaderText : dataPropertyName;
+          this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = str + " must be a numeric value.";
+          e.Cancel = true;
+        }
+        else
+          this.MonsterDataGridView.Rows[e.RowIndex].ErrorText = string.Empty;
+      }
     }
   }
 
@@ -3461,7 +3571,40 @@ public class Form1 : Form
     return this.monsterDefinitions.OrderBy<MonsterDefinition, int>((Func<MonsterDefinition, int>) (m => m.Index)).Select<MonsterDefinition, MonsterDefinition>((Func<MonsterDefinition, MonsterDefinition>) (m => new MonsterDefinition()
     {
       Index = m.Index,
-      Name = m.Name ?? string.Empty
+      Name = m.Name ?? string.Empty,
+      ExpType = m.ExpType,
+      Level = m.Level,
+      HP = m.HP,
+      MP = m.MP,
+      DamageMin = m.DamageMin,
+      DamageMax = m.DamageMax,
+      Defense = m.Defense,
+      MagicDefense = m.MagicDefense,
+      AttackRate = m.AttackRate,
+      BlockRate = m.BlockRate,
+      MoveRange = m.MoveRange,
+      AttackType = m.AttackType,
+      AttackRange = m.AttackRange,
+      ViewRange = m.ViewRange,
+      MoveSpeed = m.MoveSpeed,
+      AttackSpeed = m.AttackSpeed,
+      RegenTime = m.RegenTime,
+      Attribute = m.Attribute,
+      ItemDropRate = m.ItemDropRate,
+      MoneyDropRate = m.MoneyDropRate,
+      MaxItemLevel = m.MaxItemLevel,
+      MonsterSkill = m.MonsterSkill,
+      IceRes = m.IceRes,
+      PoisonRes = m.PoisonRes,
+      LightRes = m.LightRes,
+      FireRes = m.FireRes,
+      PentagramMainAttrib = m.PentagramMainAttrib,
+      PentagramAttribPattern = m.PentagramAttribPattern,
+      PentagramDamageMin = m.PentagramDamageMin,
+      PentagramDamageMax = m.PentagramDamageMax,
+      PentagramAttackRate = m.PentagramAttackRate,
+      PentagramDefenseRate = m.PentagramDefenseRate,
+      PentagramDefense = m.PentagramDefense
     }));
   }
 
